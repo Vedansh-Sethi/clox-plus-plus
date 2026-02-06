@@ -1,7 +1,7 @@
 #pragma once
 #include <iostream>
 #include <variant>
-#include "./token/token_type.hpp"
+#include "token/token_type.hpp"
 
 // std::monostate is equivalent to null
 using LiteralValue = std::variant<std::monostate, std::string, double, bool>;

@@ -1,5 +1,5 @@
 #include <variant>
-#include "./token/token.hpp"
+#include "token/token.hpp"
 
 std::string tokenTypeToString(TokenType type)
 {

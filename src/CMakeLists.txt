@@ -7,6 +7,7 @@ set(SOURCES
     token/token_type.hpp
     scanner/scanner.cpp
     scanner/scanner.hpp
+    expr.hpp
     error.hpp
 )
 
@@ -14,4 +15,4 @@ set(SOURCES
 add_executable(clox++ ${SOURCES})
 
 # Include the current directory for header lookups
-target_include_directories(clox++ PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(clox++ PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)

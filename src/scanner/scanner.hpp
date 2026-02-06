@@ -1,8 +1,8 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "./token/token.hpp"
-#include "./token/token_type.hpp"
+#include "token/token.hpp"
+#include "token/token_type.hpp"
 
 class Scanner
 {
