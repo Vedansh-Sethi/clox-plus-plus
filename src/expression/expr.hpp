@@ -1,40 +1,76 @@
 #include <iostream>
 #include "token/token.hpp"
 
-class Expr {};
+class ExprVisitor;
+class BinaryExpr;
+class GroupingExpr;
+class LiteralExpr;
+class UnaryExpr;
 
-class Binary : public Expr {
 
-     const Expr* left;
-     const Token op;
-     const Expr* right;
+class Expr {
+public: 
+     virtual void accept(ExprVisitor* visitor) = 0;
+};
 
-     Binary(Expr* left,Token op,Expr* right) : left(left), op(op), right(right) {}
+class ExprVisitor {
 
+public:
+     virtual void visitBinaryExpr(BinaryExpr* Expr) = 0;
+     virtual void visitGroupingExpr(GroupingExpr* Expr) = 0;
+     virtual void visitLiteralExpr(LiteralExpr* Expr) = 0;
+     virtual void visitUnaryExpr(UnaryExpr* Expr) = 0;
+
+};
+
+class BinaryExpr : public Expr {
+
+public: 
+     Expr* left;
+     Token op;
+     Expr* right;
+
+     BinaryExpr(Expr* left,Token op,Expr* right) : left(left), op(op), right(right) {}
+
+     void accept(ExprVisitor* visitor) override {
+         visitor->visitBinaryExpr(this);
+     }
  };
 
-class Grouping : public Expr {
+class GroupingExpr : public Expr {
 
-     const Expr* expression;
+public: 
+     Expr* expression;
 
-     Grouping(Expr* expression) : expression(expression) {}
+     GroupingExpr(Expr* expression) : expression(expression) {}
 
+     void accept(ExprVisitor* visitor) override {
+         visitor->visitGroupingExpr(this);
+     }
  };
 
-class Literal : public Expr {
+class LiteralExpr : public Expr {
 
-     const LiteralValue value;
+public: 
+     LiteralValue value;
 
-     Literal(LiteralValue value) : value(value) {}
+     LiteralExpr(LiteralValue value) : value(value) {}
 
+     void accept(ExprVisitor* visitor) override {
+         visitor->visitLiteralExpr(this);
+     }
  };
 
-class Unary : public Expr {
+class UnaryExpr : public Expr {
 
-     const Token op;
-     const Expr* right;
+public: 
+     Token op;
+     Expr* right;
 
-     Unary(Token op,Expr* right) : op(op), right(right) {}
+     UnaryExpr(Token op,Expr* right) : op(op), right(right) {}
 
+     void accept(ExprVisitor* visitor) override {
+         visitor->visitUnaryExpr(this);
+     }
  };
 
