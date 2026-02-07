@@ -6,6 +6,19 @@
 // std::monostate is equivalent to null
 using LiteralValue = std::variant<std::monostate, std::string, double, bool>;
 
+struct LiteralPrinter
+{
+    std::string operator()(std::monostate) {return "nil";}
+    std::string operator()(std::string s){return s;}
+    std::string operator()(double d){return std::to_string(d);}
+    std::string operator()(bool b){return b ? "true" : "false";}
+};
+
+inline std::string literalToString(LiteralValue val)
+{
+    return std::visit(LiteralPrinter{}, val);
+}
+
 class Token
 {
 public:

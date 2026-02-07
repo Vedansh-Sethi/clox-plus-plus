@@ -99,7 +99,7 @@ std::string tokenTypeToString(TokenType type)
 std::string Token::literalToString() const
 {
     if (std::holds_alternative<std::monostate>(literal))
-        return "Nil";
+        return "nil";
     if (std::holds_alternative<std::string>(literal))
         return std::get<std::string>(literal);
     if (std::holds_alternative<double>(literal))
