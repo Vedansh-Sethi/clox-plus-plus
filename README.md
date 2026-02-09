@@ -1,6 +1,6 @@
 # Clox++
 
-### This is the C++ implementation of the JLox compiler made in "Crafting Interpreters" by Robert Nystrom
+This is the C++ implementation of the JLox compiler made in "Crafting Interpreters" by Robert Nystrom
 
 ## Context Free Grammar (CFG) -
 
@@ -14,12 +14,12 @@
 | String | Lexemes or token | Expressions |
 | Implementation | Scanner | Parser |
 
-## Rules for Grammar -
+### Rules for Grammar -
 
 - We create rules that the grammar follows, which then creates the valid strings, the rules are called **productions**, and the strings created are called **derivations**
 - Each production has a head and a body, head is the name of the production and body is a list of symbols, which can be terminal or non-terminal 
 
-## Grammar for Lox -
+### Grammar for Lox -
 
 - `expression` -> `literal` | `unary` | `binary` | `grouping` ;
 - `literal` -> STRING | NUMBER | "nil" | "true" | "false" ;
@@ -27,3 +27,19 @@
 - `unary` -> ("-" | "!") `expression` ;
 - `binary` -> `expression` `operator` `expression` ;
 - `operator` -> "==" | "!=" | "<" | "<=" | ">" | ">=" | "+" | "-" | "*" | "/" ;
+
+### Drawback of Current Grammar -
+
+- The current grammar terminates into same class `expression`, this creates a barrier in implementing precedence and associativity
+- This can be solved by defining separate rules for each level of precedence
+- Each rule in grammar should contain either same precedence level or higher level expressions
+
+### Updated Grammar with Precedence -
+
+- `expression` -> `equality`
+- `equality` -> `comparison` (("!=" | "==") `comparison`) *;
+- `comparison` -> `term` ((">" | ">=" | "<" | "<=>") `term`) *;
+- `term` -> `factor` (("+" | "-") `factor`) *;
+- `factor` ->  `unary` (( "*" | "/") `unary`) *;
+- `unary` -> (( "!" | "-" ) `unary`) | `primary`;
+- `primary` -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")";
