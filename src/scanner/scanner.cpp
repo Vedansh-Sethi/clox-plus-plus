@@ -2,7 +2,7 @@
 #include <vector>
 #include <variant>
 #include <map>
-#include "./scanner/scanner.hpp"
+#include "scanner/scanner.hpp"
 #include "error.hpp"
 
 static std::map<std::string, TokenType> keywords =
@@ -75,7 +75,7 @@ void Scanner::string()
 
     if (isAtEnd())
     {
-        error(line, "Unterminated string");
+        ErrorHandler::error(line, "Unterminated string");
         return;
     }
 
@@ -141,7 +141,7 @@ void Scanner::multilineComment()
     }
     if (isAtEnd())
     {
-        error(line, "Unterminated Multiline Comment");
+        ErrorHandler::error(line, "Unterminated Multiline Comment");
     }
 }
 
@@ -230,7 +230,7 @@ void Scanner::scanToken()
         }
         else
         {
-            error(line, "Unexpected Character");
+            ErrorHandler::error(line, "Unexpected Character");
         }
         break;
     }
