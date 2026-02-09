@@ -1,12 +1,17 @@
 #pragma once
 #include <iostream>
+#include "token/token.hpp"
 
-inline void report(int line, std::string where, std::string message)
+class ErrorHandler
 {
-    std::cerr << "[line " << line << "] Error" << where << ": " << message << std::endl;
-}
+private:
+    ErrorHandler() {};
+    static ErrorHandler *instance;
+    static ErrorHandler *getInstance();
 
-inline void error(int line, std::string message)
-{
-    report(line, "", message);
-}
+public:
+    ErrorHandler(ErrorHandler &obj) = delete;
+    static void report(int line, std::string where, std::string message);
+    static void error(int line, std::string message);
+    static void error(Token token, std::string message);
+};

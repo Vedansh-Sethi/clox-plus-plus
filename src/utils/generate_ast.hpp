@@ -4,7 +4,7 @@
 #include <sstream>
 #include <fstream>
 #include "utils/splitter.hpp"
-#include <error.hpp>
+#include "error.hpp"
 
 void defineType(std::stringstream &writer, std::string baseName, std::string className, std::string fields)
 {
@@ -52,6 +52,7 @@ void defineAST(std::string outputDir, std::string fileName, std::string baseName
     std::stringstream writer;
 
     // file imports
+    writer << "#pragma once" << std::endl;
     writer << "#include <iostream>" << std::endl;
     writer << "#include \"token/token.hpp\"" << std::endl
            << std::endl;
