@@ -54,6 +54,7 @@ void defineAST(std::string outputDir, std::string fileName, std::string baseName
     // file imports
     writer << "#pragma once" << std::endl;
     writer << "#include <iostream>" << std::endl;
+    writer << "#include <vector>" << std::endl;
     writer << "#include \"token/token.hpp\"" << std::endl
            << std::endl;
 

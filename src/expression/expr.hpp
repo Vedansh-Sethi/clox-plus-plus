@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <vector>
 #include "token/token.hpp"
 
 class ExprVisitor;
@@ -7,6 +8,7 @@ class BinaryExpr;
 class GroupingExpr;
 class LiteralExpr;
 class UnaryExpr;
+class MultiExpr;
 
 
 class Expr {
@@ -21,6 +23,7 @@ public:
      virtual void visitGroupingExpr(GroupingExpr* Expr) = 0;
      virtual void visitLiteralExpr(LiteralExpr* Expr) = 0;
      virtual void visitUnaryExpr(UnaryExpr* Expr) = 0;
+     virtual void visitMultiExpr(MultiExpr* Expr) = 0;
 
 };
 
@@ -72,6 +75,18 @@ public:
 
      void accept(ExprVisitor* visitor) override {
          visitor->visitUnaryExpr(this);
+     }
+ };
+
+class MultiExpr : public Expr {
+
+public: 
+     std::vector<Expr*> exprs;
+
+     MultiExpr(std::vector<Expr*> exprs) : exprs(exprs) {}
+
+     void accept(ExprVisitor* visitor) override {
+         visitor->visitMultiExpr(this);
      }
  };
 
