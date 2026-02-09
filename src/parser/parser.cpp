@@ -91,7 +91,30 @@ Token Parser::advance()
 
 Expr *Parser::expression()
 {
-    return equality();
+    return commaSeparatedExpressions();
+}
+
+Expr *Parser::commaSeparatedExpressions()
+{
+    Expr *expr = equality();
+
+    if(!check(COMMA))
+    {
+        return expr;
+    }
+
+    std::vector<Expr*> exprs;
+    exprs.push_back(expr);
+    std::cout << "expression added" << std::endl;
+
+    while(match(COMMA))
+    {
+        expr = equality();
+        exprs.push_back(expr);
+        std::cout << "expression added" << std::endl;
+    }
+
+    return new MultiExpr(exprs);
 }
 
 Expr *Parser::equality()
@@ -158,19 +181,28 @@ Expr *Parser::unary()
         Expr *right = unary();
         return new UnaryExpr(op, right);
     }
+
     return primary();
 } 
 
 Expr *Parser::primary()
 {
     if (match(FALSE))
+    {
         return new LiteralExpr(false);
+    }
     if (match(TRUE))
+    {
         return new LiteralExpr(true);
-    if (match(NIL))
+    }
+    if (match(NIL)) 
+    {
         return new LiteralExpr(std::monostate());
+    }
     if (match(NUMBER, STRING))
+    {
         return new LiteralExpr(previous().literal);
+    }
     if (match(LEFT_PAREN))
     {
         Expr *expr = expression();
@@ -178,7 +210,7 @@ Expr *Parser::primary()
         return new GroupingExpr(expr);
     }
 
-    throw error(peek(), "Expect expression.");
+    throw error(peek(), "Expected expression.");
 }
 
 Expr* Parser::parse()
