@@ -62,3 +62,22 @@ void ASTPrinter::visitUnaryExpr(UnaryExpr *expr)
 
     result = "(" + expr->op.lexeme + " " + unaryStr + ")";
 }
+
+void ASTPrinter::visitMultiExpr(MultiExpr *expr)
+{
+    std::vector<std::string> exprStrings;
+    for(Expr* unitExpr : expr->exprs)
+    {
+        unitExpr->accept(this);
+        std::cout << "expression string added" << std::endl;
+        exprStrings.push_back(result);
+    }
+
+    result = "(multi ";
+    for(std::string exprString : exprStrings)
+    {
+        result += exprString + " ";
+    }
+
+    result += ")";
+}

@@ -10,6 +10,7 @@ private:
     void visitBinaryExpr(BinaryExpr *expr);
     void visitUnaryExpr(UnaryExpr *expr);
     void visitLiteralExpr(LiteralExpr *expr);
+    void visitMultiExpr(MultiExpr *expr);
     static ASTPrinter *instance;
     ASTPrinter() {};
 
