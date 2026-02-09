@@ -3,21 +3,31 @@
 #include <sstream>
 #include <fstream>
 #include <string>
-#include "./scanner/scanner.hpp"
-#include "./token/token.hpp"
+#include "scanner/scanner.hpp"
+#include "token/token.hpp"
 #include "error.hpp"
+#include "utils/ast_printer/ast_printer.hpp"
+#include "parser/parser.hpp"
 
 bool hadError = false;
 
 void run(std::string source)
 {
-    Scanner scanner = Scanner(source);
-    std::vector<Token> tokens = scanner.scanTokens();
+    std::cout << "Starting compilation.." << std::endl;
+    
+    std::cout << "Starting Tokenizing..." << std::endl;
+    Scanner* scanner = new Scanner(source);
+    std::vector<Token> tokens = scanner->scanTokens();
 
-    for (Token token : tokens)
-    {
-        std::cout << token.toString() << std::endl;
-    }
+    std::cout << "Starting Parsing..." << std::endl;
+    Parser* parser = new Parser(tokens);
+    Expr* expression = parser->parse();
+
+    if(hadError) return;
+
+    ASTPrinter* printer = ASTPrinter::getInstance();
+
+    std::cout << printer->print(expression) << std::endl;
 }
 
 void runFile(std::string path)
@@ -36,7 +46,8 @@ void runFile(std::string path)
     std::string source = buffer.str();
 
     run(source);
-    if (hadError) exit(EX_DATAERR);
+    if (hadError)
+        exit(EX_DATAERR);
 }
 
 void runPrompt()
