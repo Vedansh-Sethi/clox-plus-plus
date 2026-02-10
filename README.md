@@ -36,10 +36,12 @@ This is the C++ implementation of the JLox compiler made in "Crafting Interprete
 
 ### Updated Grammar with Precedence -
 
-- `expression` -> `equality`
-- `equality` -> `comparison` (("!=" | "==") `comparison`) *;
-- `comparison` -> `term` ((">" | ">=" | "<" | "<=>") `term`) *;
+- `expression` -> `Comma Separated Expressions`
+- `Comma Separated Expressions` -> `ternary` (("?") `ternary`)*;
+-  `ternary` -> `equality` ( ("?") `ternary` (":") `ternary` );
+- `equality` -> `comparison` (("!=" | "==") `comparison`)*;
+- `comparison` -> `term` ((">" | ">=" | "<" | "<=") `term`)*;
 - `term` -> `factor` (("+" | "-") `factor`) *;
 - `factor` ->  `unary` (( "*" | "/") `unary`) *;
 - `unary` -> (( "!" | "-" ) `unary`) | `primary`;
-- `primary` -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")";
+- `primary` -> NUMBER | STRING | "true" | "false" | "nil" | "(" `expression` ")";
