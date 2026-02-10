@@ -96,25 +96,47 @@ Expr *Parser::expression()
 
 Expr *Parser::commaSeparatedExpressions()
 {
-    Expr *expr = equality();
+    Expr *expr = ternary();
 
-    if(!check(COMMA))
+    if (!check(COMMA))
     {
         return expr;
     }
 
-    std::vector<Expr*> exprs;
+    std::vector<Expr *> exprs;
     exprs.push_back(expr);
     std::cout << "expression added" << std::endl;
 
-    while(match(COMMA))
+    while (match(COMMA))
     {
-        expr = equality();
+        expr = ternary();
         exprs.push_back(expr);
         std::cout << "expression added" << std::endl;
     }
 
     return new MultiExpr(exprs);
+}
+
+Expr *Parser::ternary()
+{
+    Expr *expr = equality();
+
+    Expr *condition = expr;
+
+    if (match(INTERROGATE)) expr = ternary();
+    else return expr;
+
+    Expr *ifTrue = expr;
+
+    if (match(COLON))
+    {
+        expr = ternary();
+        Expr *ifFalse = expr;
+        expr = new TernaryExpr(condition, ifTrue, ifFalse);
+    }
+    else expr = new TernaryExpr(condition, ifTrue);
+
+    return expr;
 }
 
 Expr *Parser::equality()
@@ -183,7 +205,7 @@ Expr *Parser::unary()
     }
 
     return primary();
-} 
+}
 
 Expr *Parser::primary()
 {
@@ -195,7 +217,7 @@ Expr *Parser::primary()
     {
         return new LiteralExpr(true);
     }
-    if (match(NIL)) 
+    if (match(NIL))
     {
         return new LiteralExpr(std::monostate());
     }
@@ -213,12 +235,13 @@ Expr *Parser::primary()
     throw error(peek(), "Expected expression.");
 }
 
-Expr* Parser::parse()
+Expr *Parser::parse()
 {
-    try 
+    try
     {
         return expression();
-    } catch(ParseError error)
+    }
+    catch (ParseError error)
     {
         return nullptr;
     }

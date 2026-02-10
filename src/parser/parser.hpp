@@ -10,8 +10,9 @@ class Parser
 private:
     const std::vector<Token> tokens;
     int current = 0;
-    Expr *commaSeparatedExpressions();
     Expr *expression();
+    Expr *commaSeparatedExpressions();
+    Expr *ternary();
     Expr *equality();
     Expr *comparison();
     Expr *term();
