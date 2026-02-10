@@ -11,6 +11,7 @@ private:
     void visitUnaryExpr(UnaryExpr *expr);
     void visitLiteralExpr(LiteralExpr *expr);
     void visitMultiExpr(MultiExpr *expr);
+    void visitTernaryExpr(TernaryExpr *expr);
     static ASTPrinter *instance;
     ASTPrinter() {};
 

@@ -81,3 +81,22 @@ void ASTPrinter::visitMultiExpr(MultiExpr *expr)
 
     result += ")";
 }
+
+void ASTPrinter::visitTernaryExpr(TernaryExpr* expr)
+{
+    expr->condition->accept(this);
+    std::string conditionString = result;
+
+    expr->ifTrue->accept(this);
+    std::string ifTrueString = result;
+
+    std::string ifFalseString;
+    if(expr->ifFalse != nullptr)
+    {
+        expr->ifFalse->accept(this);
+        ifFalseString = result;
+    }
+
+    result = "(ternary condition : " + conditionString + " if true : " + ifTrueString;
+    expr->ifFalse == nullptr ? result += ")" : result += " if false : " + ifFalseString + ")";
+}
