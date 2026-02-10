@@ -12,6 +12,8 @@ enum TokenType
     DOT,
     MINUS,
     PLUS,
+    COLON,
+    INTERROGATE,
     SEMICOLON,
     SLASH,
     STAR,
