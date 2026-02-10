@@ -9,6 +9,7 @@ class GroupingExpr;
 class LiteralExpr;
 class UnaryExpr;
 class MultiExpr;
+class TernaryExpr;
 
 
 class Expr {
@@ -24,6 +25,7 @@ public:
      virtual void visitLiteralExpr(LiteralExpr* Expr) = 0;
      virtual void visitUnaryExpr(UnaryExpr* Expr) = 0;
      virtual void visitMultiExpr(MultiExpr* Expr) = 0;
+     virtual void visitTernaryExpr(TernaryExpr* Expr) = 0;
 
 };
 
@@ -87,6 +89,20 @@ public:
 
      void accept(ExprVisitor* visitor) override {
          visitor->visitMultiExpr(this);
+     }
+ };
+
+class TernaryExpr : public Expr {
+
+public: 
+     Expr* condition;
+     Expr* ifTrue;
+     Expr* ifFalse;
+
+     TernaryExpr(Expr* condition,Expr* ifTrue,Expr* ifFalse = nullptr) : condition(condition), ifTrue(ifTrue), ifFalse(ifFalse) {}
+
+     void accept(ExprVisitor* visitor) override {
+         visitor->visitTernaryExpr(this);
      }
  };
 

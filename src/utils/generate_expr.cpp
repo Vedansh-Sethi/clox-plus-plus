@@ -18,7 +18,8 @@ int main(int argc, char *argv[])
             "Grouping : Expr* expression",
             "Literal  : LiteralValue value",
             "Unary    : Token op, Expr* right",
-            "Multi : std::vector<Expr*> exprs"
+            "Multi : std::vector<Expr*> exprs",
+            "Ternary : Expr* condition, Expr* ifTrue, Expr* ifFalse",
         };
     defineAST(outputDir, "expr", "Expr", types);
 }
