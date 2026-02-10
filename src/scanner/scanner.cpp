@@ -120,7 +120,7 @@ void Scanner::multilineComment()
 {
     while (!isAtEnd())
     {
-        if(peek() == '/' && peek(1) == '*')
+        if (peek() == '/' && peek(1) == '*')
         {
             advance();
             advance();
@@ -179,6 +179,12 @@ void Scanner::scanToken()
         break;
     case '*':
         addToken(STAR);
+        break;
+    case '?':
+        addToken(INTERROGATE);
+        break;
+    case ':':
+        addToken(COLON);
         break;
     case '!':
         addToken(match('=') ? BANG_EQUAL : BANG);
