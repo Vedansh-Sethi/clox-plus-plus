@@ -22,6 +22,10 @@ std::string tokenTypeToString(TokenType type)
         return "MINUS";
     case PLUS:
         return "PLUS";
+    case COLON:
+        return "COLON";
+    case INTERROGATE:
+        return "INTERROGATE";
     case SEMICOLON:
         return "SEMICOLON";
     case SLASH:
