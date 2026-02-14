@@ -69,7 +69,6 @@ void ASTPrinter::visitMultiExpr(MultiExpr *expr)
     for(Expr* unitExpr : expr->exprs)
     {
         unitExpr->accept(this);
-        std::cout << "expression string added" << std::endl;
         exprStrings.push_back(result);
     }
 
@@ -97,6 +96,5 @@ void ASTPrinter::visitTernaryExpr(TernaryExpr* expr)
         ifFalseString = result;
     }
 
-    result = "(ternary condition : " + conditionString + " if true : " + ifTrueString;
-    expr->ifFalse == nullptr ? result += ")" : result += " if false : " + ifFalseString + ")";
+    result = "(ternary " + conditionString + " " + ifTrueString + " " + ifFalseString + ")";
 }

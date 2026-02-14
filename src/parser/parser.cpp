@@ -105,13 +105,11 @@ Expr *Parser::commaSeparatedExpressions()
 
     std::vector<Expr *> exprs;
     exprs.push_back(expr);
-    std::cout << "expression added" << std::endl;
 
     while (match(COMMA))
     {
         expr = ternary();
         exprs.push_back(expr);
-        std::cout << "expression added" << std::endl;
     }
 
     return new MultiExpr(exprs);
@@ -232,14 +230,28 @@ Expr *Parser::primary()
         return new GroupingExpr(expr);
     }
 
-    throw error(peek(), "Expected expression.");
+    ErrorHandler::error(peek(), "Expected Expression");
+    advance();
+    if(peek().type == END_FILE)
+    {
+        return nullptr;
+    }
+    else 
+    {
+        return expression();
+    }
 }
 
 Expr *Parser::parse()
 {
     try
     {
-        return expression();
+        Expr *expr = expression();
+        if(!isAtEnd())
+        {
+            throw error(peek(), "Parser did not reach EOF");
+        }
+        return expr;
     }
     catch (ParseError error)
     {
