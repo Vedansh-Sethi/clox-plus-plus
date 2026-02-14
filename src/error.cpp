@@ -1,7 +1,11 @@
 #include <iostream>
 #include "error.hpp"
+#include "expression/expr.hpp"
+#include "interpreter/interpreter.hpp"
 
 ErrorHandler* ErrorHandler::instance = nullptr;
+bool ErrorHandler::hadError = false;
+bool ErrorHandler::hadRuntimeError = false;
 
 ErrorHandler* ErrorHandler::getInstance()
 {
@@ -34,4 +38,11 @@ void ErrorHandler::error(Token token, std::string message)
     {
         report(token.line, " at '" + token.lexeme + "'", message);
     }
+    hadError = true;
+}
+
+void ErrorHandler::runtimeError(Interpreter::RuntimeError error)
+{
+    std::cerr << error.what() << " [line " << error.token.line << "]\n";
+    hadRuntimeError = true;
 }
