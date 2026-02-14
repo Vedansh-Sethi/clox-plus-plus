@@ -9,25 +9,27 @@
 #include "utils/ast_printer/ast_printer.hpp"
 #include "parser/parser.hpp"
 
-bool hadError = false;
-
 void run(std::string source)
 {
     std::cout << "Starting compilation.." << std::endl;
-    
+
     std::cout << "Starting Tokenizing..." << std::endl;
-    Scanner* scanner = new Scanner(source);
+    Scanner *scanner = new Scanner(source);
     std::vector<Token> tokens = scanner->scanTokens();
 
     std::cout << "Starting Parsing..." << std::endl;
-    Parser* parser = new Parser(tokens);
-    Expr* expression = parser->parse();
+    Parser *parser = new Parser(tokens);
+    Expr *expression = parser->parse();
 
-    if(hadError) return;
+    if (ErrorHandler::hadError)
+        return;
 
-    ASTPrinter* printer = ASTPrinter::getInstance();
-
+    ASTPrinter *printer = ASTPrinter::getInstance();
     std::cout << printer->print(expression) << std::endl;
+
+    std::cout << "Starting Evaluating..." << std::endl;
+    Interpreter* interpreter = new Interpreter();
+    interpreter->interpret(expression);
 }
 
 void runFile(std::string path)
@@ -46,8 +48,10 @@ void runFile(std::string path)
     std::string source = buffer.str();
 
     run(source);
-    if (hadError)
+    if (ErrorHandler::hadError)
         exit(EX_DATAERR);
+    if (ErrorHandler::hadRuntimeError)
+        exit(70);
 }
 
 void runPrompt()
@@ -60,7 +64,7 @@ void runPrompt()
         if (line.empty())
             break;
         run(line);
-        hadError = true;
+        ErrorHandler::hadError = true;
     }
 }
 
