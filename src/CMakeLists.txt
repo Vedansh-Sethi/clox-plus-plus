@@ -5,6 +5,7 @@ set(SOURCES
     utils/ast_printer/ast_printer.cpp
     error.cpp
     parser/parser.cpp
+    interpreter/interpreter.cpp
 )
 
 
