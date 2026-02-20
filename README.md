@@ -45,3 +45,9 @@ This is the C++ implementation of the JLox compiler made in "Crafting Interprete
 - `factor` ->  `unary` (( "*" | "/") `unary`) *;
 - `unary` -> (( "!" | "-" ) `unary`) | `primary`;
 - `primary` -> NUMBER | STRING | "true" | "false" | "nil" | "(" `expression` ")";
+
+### Basic Rules for statements -
+- `program` -> `stmt`* EOF;
+- `stmt` -> `exprStmt` | `printStmt`;
+- `exprStmt` -> `expression` ";" ;
+- `printStmt` -> "print" `expression` ";";
