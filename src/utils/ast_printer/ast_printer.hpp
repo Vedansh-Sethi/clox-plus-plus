@@ -6,12 +6,12 @@ class ASTPrinter : public ExprVisitor
 {
 private:
     std::string result;
-    void visitGroupingExpr(GroupingExpr *expr);
-    void visitBinaryExpr(BinaryExpr *expr);
-    void visitUnaryExpr(UnaryExpr *expr);
-    void visitLiteralExpr(LiteralExpr *expr);
-    void visitMultiExpr(MultiExpr *expr);
-    void visitTernaryExpr(TernaryExpr *expr);
+    void visitGroupingExpr(GroupingExpr *expr) override;
+    void visitBinaryExpr(BinaryExpr *expr) override;
+    void visitUnaryExpr(UnaryExpr *expr) override;
+    void visitLiteralExpr(LiteralExpr *expr) override;
+    void visitMultiExpr(MultiExpr *expr) override;
+    void visitTernaryExpr(TernaryExpr *expr) override;
     static ASTPrinter *instance;
     ASTPrinter() {};
 
