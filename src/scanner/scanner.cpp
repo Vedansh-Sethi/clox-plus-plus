@@ -253,3 +253,11 @@ std::vector<Token> Scanner::scanTokens()
     tokens.push_back(Token(END_FILE, "", std::monostate(), line));
     return tokens;
 }
+
+void Scanner::printTokens(std::vector<Token> tokens) const
+{
+    for(Token token : tokens)
+    {
+        std::cout << token.toString() << std::endl;
+    }
+}

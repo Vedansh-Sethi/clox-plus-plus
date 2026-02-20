@@ -11,6 +11,11 @@ LiteralValue Interpreter::evaluate(Expr *expr)
     return result;
 }
 
+void Interpreter::execute(Stmt* stmt)
+{
+    stmt->accept(this);
+}
+
 bool Interpreter::isTruthy(LiteralValue value)
 {
     if (std::holds_alternative<std::monostate>(value))
@@ -157,6 +162,17 @@ void Interpreter::visitTernaryExpr(TernaryExpr *expr)
     result = isTruthy(condition) ? ifTrue : ifFalse;
 }
 
+void Interpreter::visitExprStmt(ExprStmt* stmt)
+{
+    evaluate(stmt->expr);
+}
+
+void Interpreter::visitPrintStmt(PrintStmt* stmt)
+{
+    LiteralValue value = evaluate(stmt->expr);
+    std::cout << stringify(value) << std::endl;
+}
+
 std::string Interpreter::stringify(LiteralValue value)
 {
     if (std::holds_alternative<std::monostate>(value))
@@ -180,14 +196,16 @@ std::string Interpreter::stringify(LiteralValue value)
     }
 }
 
-void Interpreter::interpret(Expr *expr)
+void Interpreter::interpret(std::vector<Stmt*> stmts)
 {
-    try
+    try 
     {
-        evaluate(expr);
-        std::cout << stringify(result) << std::endl;
+        for(Stmt* stmt : stmts)
+        {
+            execute(stmt);
+        }
     }
-    catch (RuntimeError error)
+    catch(RuntimeError error)
     {
         ErrorHandler::runtimeError(error);
     }

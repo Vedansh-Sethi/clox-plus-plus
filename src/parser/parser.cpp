@@ -106,7 +106,7 @@ Expr *Parser::commaSeparatedExpressions()
     std::vector<Expr *> exprs;
     exprs.push_back(expr);
 
-    while (match(COMMA))
+    while (match<TokenType>(COMMA))
     {
         expr = ternary();
         exprs.push_back(expr);
@@ -121,18 +121,21 @@ Expr *Parser::ternary()
 
     Expr *condition = expr;
 
-    if (match(INTERROGATE)) expr = ternary();
-    else return expr;
+    if (match<TokenType>(INTERROGATE))
+        expr = ternary();
+    else
+        return expr;
 
     Expr *ifTrue = expr;
 
-    if (match(COLON))
+    if (match<TokenType>(COLON))
     {
         expr = ternary();
         Expr *ifFalse = expr;
         expr = new TernaryExpr(condition, ifTrue, ifFalse);
     }
-    else expr = new TernaryExpr(condition, ifTrue);
+    else
+        expr = new TernaryExpr(condition, ifTrue);
 
     return expr;
 }
@@ -141,7 +144,7 @@ Expr *Parser::equality()
 {
     Expr *expr = comparison();
 
-    while (match(BANG_EQUAL, EQUAL_EQUAL))
+    while (match<TokenType, TokenType>(BANG_EQUAL, EQUAL_EQUAL))
     {
         Token op = previous();
         Expr *right = comparison();
@@ -155,7 +158,7 @@ Expr *Parser::comparison()
 {
     Expr *expr = term();
 
-    while (match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL))
+    while (match<TokenType, TokenType>(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL))
     {
         Token op = previous();
         Expr *right = term();
@@ -169,7 +172,7 @@ Expr *Parser::term()
 {
     Expr *expr = factor();
 
-    while (match(PLUS, MINUS))
+    while (match<TokenType, TokenType>(PLUS, MINUS))
     {
         Token op = previous();
         Expr *right = factor();
@@ -183,7 +186,7 @@ Expr *Parser::factor()
 {
     Expr *expr = unary();
 
-    while (match(SLASH, STAR))
+    while (match<TokenType, TokenType>(SLASH, STAR))
     {
         Token op = previous();
         Expr *right = unary();
@@ -195,7 +198,7 @@ Expr *Parser::factor()
 
 Expr *Parser::unary()
 {
-    if (match(BANG, MINUS))
+    if (match<TokenType, TokenType>(BANG, MINUS))
     {
         Token op = previous();
         Expr *right = unary();
@@ -207,23 +210,23 @@ Expr *Parser::unary()
 
 Expr *Parser::primary()
 {
-    if (match(FALSE))
+    if (match<TokenType>(FALSE))
     {
         return new LiteralExpr(false);
     }
-    if (match(TRUE))
+    if (match<TokenType>(TRUE))
     {
         return new LiteralExpr(true);
     }
-    if (match(NIL))
+    if (match<TokenType>(NIL))
     {
         return new LiteralExpr(std::monostate());
     }
-    if (match(NUMBER, STRING))
+    if (match<TokenType>(NUMBER, STRING))
     {
         return new LiteralExpr(previous().literal);
     }
-    if (match(LEFT_PAREN))
+    if (match<TokenType>(LEFT_PAREN))
     {
         Expr *expr = expression();
         consume(RIGHT_PAREN, "Expect \")\" after expression");
@@ -232,29 +235,44 @@ Expr *Parser::primary()
 
     ErrorHandler::error(peek(), "Expected Expression");
     advance();
-    if(peek().type == END_FILE)
+    if (peek().type == END_FILE)
     {
         return nullptr;
     }
-    else 
+    else
     {
         return expression();
     }
 }
 
-Expr *Parser::parse()
+Stmt *Parser::printStmt()
 {
-    try
+    Expr *value = expression();
+    consume(SEMICOLON, "Expected \";\" after value");
+    return new PrintStmt(value);
+}
+
+Stmt *Parser::exprStmt()
+{
+    Expr *value = expression();
+    consume(SEMICOLON, "Expected \";\" after value");
+    return new ExprStmt(value);
+}
+
+Stmt *Parser::statement()
+{
+    if (match(PRINT))
+        return printStmt();
+
+    return exprStmt();
+}
+
+std::vector<Stmt *> Parser::parse()
+{
+    std::vector<Stmt *> statements;
+    while (!isAtEnd())
     {
-        Expr *expr = expression();
-        if(!isAtEnd())
-        {
-            throw error(peek(), "Parser did not reach EOF");
-        }
-        return expr;
+        statements.push_back(statement());
     }
-    catch (ParseError error)
-    {
-        return nullptr;
-    }
+    return statements;
 }

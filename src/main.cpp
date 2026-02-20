@@ -16,20 +16,24 @@ void run(std::string source)
     std::cout << "Starting Tokenizing..." << std::endl;
     Scanner *scanner = new Scanner(source);
     std::vector<Token> tokens = scanner->scanTokens();
+    scanner->printTokens(tokens);
 
     std::cout << "Starting Parsing..." << std::endl;
     Parser *parser = new Parser(tokens);
-    Expr *expression = parser->parse();
+    std::vector<Stmt*> stmts = parser->parse();
 
     if (ErrorHandler::hadError)
         return;
 
     ASTPrinter *printer = ASTPrinter::getInstance();
-    std::cout << printer->print(expression) << std::endl;
+    // std::cout << printer->print(expressions) << std::endl;
 
     std::cout << "Starting Evaluating..." << std::endl;
-    Interpreter* interpreter = new Interpreter();
-    interpreter->interpret(expression);
+    Interpreter *interpreter = new Interpreter();
+    interpreter->interpret(stmts);
+
+    if (ErrorHandler::hadRuntimeError)
+        return;
 }
 
 void runFile(std::string path)
@@ -58,13 +62,14 @@ void runPrompt()
 {
     while (1)
     {
-        std::cout << "> " << std::endl;
+        std::cout << "> ";
         std::string line;
         getline(std::cin, line);
         if (line.empty())
             break;
         run(line);
-        ErrorHandler::hadError = true;
+        ErrorHandler::hadError = false;
+        ErrorHandler::hadRuntimeError = false;
     }
 }
 
