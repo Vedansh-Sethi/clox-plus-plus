@@ -6,6 +6,7 @@ set(SOURCES
     error.cpp
     parser/parser.cpp
     interpreter/interpreter.cpp
+    environment/environment.cpp
 )
 
 
