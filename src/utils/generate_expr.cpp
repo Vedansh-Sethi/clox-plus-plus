@@ -14,6 +14,7 @@ int main(int argc, char *argv[])
     std::string outputDir = argv[1];
     std::vector<std::string> types =
         {
+            "Assign : Token ident, Expr* value",
             "Binary   : Expr* left, Token op, Expr* right",
             "Grouping : Expr* expression",
             "Literal  : LiteralValue value",
