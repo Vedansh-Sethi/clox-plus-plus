@@ -18,6 +18,7 @@ private:
     Expr *expression();
     Expr *commaSeparatedExpressions();
     Expr *ternary();
+    Expr *assignment();
     Expr *equality();
     Expr *comparison();
     Expr *term();

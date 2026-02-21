@@ -115,9 +115,29 @@ Expr *Parser::commaSeparatedExpressions()
     return new MultiExpr(exprs);
 }
 
-Expr *Parser::ternary()
+Expr *Parser::assignment()
 {
     Expr *expr = equality();
+
+    if (match(EQUAL))
+    {
+        Token equals = previous();
+        Expr *value = assignment();
+        if(VariableExpr* varExpr = dynamic_cast<VariableExpr*>(expr))
+        {
+            Token ident = varExpr->ident;
+            return new AssignExpr(ident, value);
+        }
+
+        ErrorHandler::error(equals, "Invalid Assignment Target");
+    }
+
+    return expr;
+}
+
+Expr *Parser::ternary()
+{
+    Expr *expr = assignment();
 
     Expr *condition = expr;
 

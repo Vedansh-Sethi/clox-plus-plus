@@ -4,6 +4,7 @@
 #include "token/token.hpp"
 
 class ExprVisitor;
+class AssignExpr;
 class BinaryExpr;
 class GroupingExpr;
 class LiteralExpr;
@@ -21,6 +22,7 @@ public:
 class ExprVisitor {
 
 public:
+     virtual void visitAssignExpr(AssignExpr* Expr) = 0;
      virtual void visitBinaryExpr(BinaryExpr* Expr) = 0;
      virtual void visitGroupingExpr(GroupingExpr* Expr) = 0;
      virtual void visitLiteralExpr(LiteralExpr* Expr) = 0;
@@ -30,6 +32,19 @@ public:
      virtual void visitVariableExpr(VariableExpr* Expr) = 0;
 
 };
+
+class AssignExpr : public Expr {
+
+public: 
+     Token ident;
+     Expr* value;
+
+     AssignExpr(Token ident,Expr* value) : ident(ident), value(value) {}
+
+     void accept(ExprVisitor* visitor) override {
+         visitor->visitAssignExpr(this);
+     }
+ };
 
 class BinaryExpr : public Expr {
 
