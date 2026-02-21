@@ -38,16 +38,20 @@ This is the C++ implementation of the JLox compiler made in "Crafting Interprete
 
 - `expression` -> `Comma Separated Expressions`
 - `Comma Separated Expressions` -> `ternary` (("?") `ternary`)*;
--  `ternary` -> `equality` ( ("?") `ternary` (":") `ternary` );
+-  `ternary` -> `assignment` ( ("?") `ternary` (":") `ternary` );
+-  `assignment` -> IDENTIFIER "="  `assignment` | `equality`
 - `equality` -> `comparison` (("!=" | "==") `comparison`)*;
 - `comparison` -> `term` ((">" | ">=" | "<" | "<=") `term`)*;
 - `term` -> `factor` (("+" | "-") `factor`) *;
 - `factor` ->  `unary` (( "*" | "/") `unary`) *;
 - `unary` -> (( "!" | "-" ) `unary`) | `primary`;
-- `primary` -> NUMBER | STRING | "true" | "false" | "nil" | "(" `expression` ")";
+- `primary` -> NUMBER | STRING | "true" | "false" | "nil" | "(" `expression` ")" | IDENTIFIER;
 
 ### Basic Rules for statements -
-- `program` -> `stmt`* EOF;
+- `program` -> `declaration`* EOF;
+- `declaration` -> `varDeclStmt` | `stmt`;
+- `varDeclStmt` -> "var" IDENTIFIER ("="  `expression`)? ";";
 - `stmt` -> `exprStmt` | `printStmt`;
 - `exprStmt` -> `expression` ";" ;
 - `printStmt` -> "print" `expression` ";";
+
