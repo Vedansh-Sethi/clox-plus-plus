@@ -5,16 +5,17 @@
 #include "token/token.hpp"
 #include "scanner/scanner.hpp"
 
-ASTPrinter* ASTPrinter::instance = nullptr;
+ASTPrinter *ASTPrinter::instance = nullptr;
 
-ASTPrinter* ASTPrinter::getInstance()
+ASTPrinter *ASTPrinter::getInstance()
 {
-    if(instance == nullptr)
+    if (instance == nullptr)
     {
         instance = new ASTPrinter();
         return instance;
     }
-    else return instance;
+    else
+        return instance;
 }
 
 std::string ASTPrinter::print(Expr *expr)
@@ -66,14 +67,14 @@ void ASTPrinter::visitUnaryExpr(UnaryExpr *expr)
 void ASTPrinter::visitMultiExpr(MultiExpr *expr)
 {
     std::vector<std::string> exprStrings;
-    for(Expr* unitExpr : expr->exprs)
+    for (Expr *unitExpr : expr->exprs)
     {
         unitExpr->accept(this);
         exprStrings.push_back(result);
     }
 
     result = "(multi ";
-    for(std::string exprString : exprStrings)
+    for (std::string exprString : exprStrings)
     {
         result += exprString + " ";
     }
@@ -81,7 +82,7 @@ void ASTPrinter::visitMultiExpr(MultiExpr *expr)
     result += ")";
 }
 
-void ASTPrinter::visitTernaryExpr(TernaryExpr* expr)
+void ASTPrinter::visitTernaryExpr(TernaryExpr *expr)
 {
     expr->condition->accept(this);
     std::string conditionString = result;
@@ -90,7 +91,7 @@ void ASTPrinter::visitTernaryExpr(TernaryExpr* expr)
     std::string ifTrueString = result;
 
     std::string ifFalseString;
-    if(expr->ifFalse != nullptr)
+    if (expr->ifFalse != nullptr)
     {
         expr->ifFalse->accept(this);
         ifFalseString = result;
@@ -99,7 +100,5 @@ void ASTPrinter::visitTernaryExpr(TernaryExpr* expr)
     result = "(ternary " + conditionString + " " + ifTrueString + " " + ifFalseString + ")";
 }
 
-void ASTPrinter::visitVariableExpr(VariableExpr *expr)
-{
-
-}
+void ASTPrinter::visitVariableExpr(VariableExpr *expr) {}
+void ASTPrinter::visitAssignExpr(AssignExpr *expr) {}
