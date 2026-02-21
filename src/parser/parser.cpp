@@ -222,6 +222,10 @@ Expr *Parser::primary()
     {
         return new LiteralExpr(std::monostate());
     }
+    if (match<TokenType>(IDENTIFIER))
+    {
+        return new VariableExpr(previous());
+    }
     if (match<TokenType>(NUMBER, STRING))
     {
         return new LiteralExpr(previous().literal);
@@ -248,14 +252,14 @@ Expr *Parser::primary()
 Stmt *Parser::printStmt()
 {
     Expr *value = expression();
-    consume(SEMICOLON, "Expected \";\" after value");
+    consume(SEMICOLON, "Expected \";\" at the end of line");
     return new PrintStmt(value);
 }
 
 Stmt *Parser::exprStmt()
 {
     Expr *value = expression();
-    consume(SEMICOLON, "Expected \";\" after value");
+    consume(SEMICOLON, "Expected \";\" after expression");
     return new ExprStmt(value);
 }
 
@@ -267,12 +271,44 @@ Stmt *Parser::statement()
     return exprStmt();
 }
 
+Stmt *Parser::varDeclStmt()
+{
+    Token ident = consume(IDENTIFIER, "Expected a variable name");
+
+    Expr *initializer = nullptr;
+    if (match(EQUAL))
+    {
+        initializer = expression();
+    }
+
+    consume(SEMICOLON, "Expected \";\" after variable declaration");
+    return new VarDeclStmt(ident, initializer);
+}
+
+Stmt *Parser::declaration()
+{
+    try
+    {
+        if (match(VAR))
+        {
+            return varDeclStmt();
+        }
+
+        return statement();
+    }
+    catch (ParseError error)
+    {
+        synchronize();
+        return nullptr;
+    }
+}
+
 std::vector<Stmt *> Parser::parse()
 {
     std::vector<Stmt *> statements;
     while (!isAtEnd())
     {
-        statements.push_back(statement());
+        statements.push_back(declaration());
     }
     return statements;
 }
