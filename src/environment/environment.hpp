@@ -10,5 +10,6 @@ private:
 
 public:
     void define(std::string ident, LiteralValue value);
+    void assign(Token ident, LiteralValue value);
     LiteralValue get(Token ident);
 };

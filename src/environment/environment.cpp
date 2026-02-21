@@ -16,3 +16,14 @@ LiteralValue Environment::get(Token ident)
 
     throw ErrorHandler::RuntimeError(ident, "Undefined variable " + ident.lexeme + ".");
 }
+
+void Environment::assign(Token ident, LiteralValue value)
+{
+    if(values.count(ident.lexeme))
+    {
+        values[ident.lexeme] = value;
+        return;
+    }
+
+    throw ErrorHandler::RuntimeError(ident, "Undefined Variable '" + ident.lexeme + "'.");
+}
