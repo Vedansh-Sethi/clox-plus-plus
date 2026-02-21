@@ -24,6 +24,7 @@ private:
     void visitMultiExpr(MultiExpr *expr) override;
     void visitTernaryExpr(TernaryExpr *expr) override;
     void visitVariableExpr(VariableExpr *expr) override;
+    void visitAssignExpr(AssignExpr *expr) override;
 
     // statement interpreting functions
     void visitPrintStmt(PrintStmt* stmt) override;

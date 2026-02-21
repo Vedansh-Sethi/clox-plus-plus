@@ -167,6 +167,14 @@ void Interpreter::visitVariableExpr(VariableExpr *expr)
     result = environment.get(expr->ident);
 }
 
+void Interpreter::visitAssignExpr(AssignExpr *expr)
+{
+    LiteralValue value = evaluate(expr->value);
+    result = value;
+    environment.assign(expr->ident, value);
+
+}
+
 void Interpreter::visitExprStmt(ExprStmt* stmt)
 {
     evaluate(stmt->expr);
