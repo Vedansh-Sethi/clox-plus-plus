@@ -26,6 +26,8 @@ private:
     Expr *primary();
 
     // statement parsing functions
+    Stmt *declaration();
+    Stmt *varDeclStmt();
     Stmt *statement();
     Stmt *printStmt();
     Stmt *exprStmt();
