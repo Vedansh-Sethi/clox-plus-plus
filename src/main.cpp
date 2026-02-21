@@ -4,6 +4,7 @@
 #include <fstream>
 #include <string>
 #include "scanner/scanner.hpp"
+#include "interpreter/interpreter.hpp"
 #include "token/token.hpp"
 #include "error.hpp"
 #include "utils/ast_printer/ast_printer.hpp"

@@ -98,3 +98,8 @@ void ASTPrinter::visitTernaryExpr(TernaryExpr* expr)
 
     result = "(ternary " + conditionString + " " + ifTrueString + " " + ifFalseString + ")";
 }
+
+void ASTPrinter::visitVariableExpr(VariableExpr *expr)
+{
+
+}

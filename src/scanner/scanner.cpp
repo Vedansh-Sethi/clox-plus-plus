@@ -256,7 +256,7 @@ std::vector<Token> Scanner::scanTokens()
 
 void Scanner::printTokens(std::vector<Token> tokens) const
 {
-    for(Token token : tokens)
+    for (Token token : tokens)
     {
         std::cout << token.toString() << std::endl;
     }

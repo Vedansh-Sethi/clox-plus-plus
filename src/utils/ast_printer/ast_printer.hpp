@@ -12,6 +12,7 @@ private:
     void visitLiteralExpr(LiteralExpr *expr) override;
     void visitMultiExpr(MultiExpr *expr) override;
     void visitTernaryExpr(TernaryExpr *expr) override;
+    void visitVariableExpr(VariableExpr *expr) override; 
     static ASTPrinter *instance;
     ASTPrinter() {};
 
