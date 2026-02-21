@@ -2,6 +2,7 @@
 #include <iostream>
 #include "expression/expr.hpp"
 #include "statement/stmt.hpp"
+#include "environment/environment.hpp"
 
 using LiteralValue = std::variant<std::monostate, std::string, double, bool>;
 
@@ -11,6 +12,7 @@ private:
     // private variables
     LiteralValue result;
     LiteralValue evaluate(Expr *expr);
+    Environment environment;
     void execute(Stmt *stmt);
 
 private:
@@ -21,21 +23,16 @@ private:
     void visitBinaryExpr(BinaryExpr *expr) override;
     void visitMultiExpr(MultiExpr *expr) override;
     void visitTernaryExpr(TernaryExpr *expr) override;
+    void visitVariableExpr(VariableExpr *expr) override;
 
     // statement interpreting functions
     void visitPrintStmt(PrintStmt* stmt) override;
     void visitExprStmt(ExprStmt* stmt) override;
+    void visitVarDeclStmt(VarDeclStmt* stmt) override;
 
 
 public:
     void interpret(std::vector<Stmt*> stmts);
-    class RuntimeError : public std::runtime_error
-    {
-
-    public:
-        const Token token;
-        RuntimeError(Token token, std::string message) : std::runtime_error(message), token(token) {}
-    };
 
 private:
     // helper functions

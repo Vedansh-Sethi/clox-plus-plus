@@ -33,7 +33,7 @@ bool Interpreter::checkOperandValidity(Token opToken, LiteralValue operand)
 {
     if (!std::holds_alternative<double>(operand))
     {
-        throw RuntimeError(opToken, "Operands must be numbers");
+        throw ErrorHandler::RuntimeError(opToken, "Operands must be numbers");
         return false;
     }
     return true;
@@ -43,12 +43,12 @@ bool Interpreter::checkOperandValidity(Token opToken, LiteralValue right, Litera
 {
     if (!std::holds_alternative<double>(left) || !std::holds_alternative<double>(right))
     {
-        throw RuntimeError(opToken, "Operands must be numbers");
+        throw ErrorHandler::RuntimeError(opToken, "Operands must be numbers");
         return false;
     }
     if (opToken.type == SLASH && std::get<double>(right) == 0)
     {
-        throw RuntimeError(opToken, "Division by zero error");
+        throw ErrorHandler::RuntimeError(opToken, "Division by zero error");
         return false;
     }
     return true;
@@ -115,7 +115,7 @@ void Interpreter::visitBinaryExpr(BinaryExpr *expr)
         else if (std::holds_alternative<std::string>(left) && std::holds_alternative<std::string>(right))
             result = std::get<std::string>(left) + std::get<std::string>(right);
         else
-            throw RuntimeError(expr->op, "operands must be two numbers or two strings");
+            throw ErrorHandler::RuntimeError(expr->op, "operands must be two numbers or two strings");
         break;
     case GREATER:
         if (checkOperandValidity(expr->op, right, left))
@@ -162,6 +162,11 @@ void Interpreter::visitTernaryExpr(TernaryExpr *expr)
     result = isTruthy(condition) ? ifTrue : ifFalse;
 }
 
+void Interpreter::visitVariableExpr(VariableExpr *expr)
+{
+    result = environment.get(expr->ident);
+}
+
 void Interpreter::visitExprStmt(ExprStmt* stmt)
 {
     evaluate(stmt->expr);
@@ -171,6 +176,17 @@ void Interpreter::visitPrintStmt(PrintStmt* stmt)
 {
     LiteralValue value = evaluate(stmt->expr);
     std::cout << stringify(value) << std::endl;
+}
+
+void Interpreter::visitVarDeclStmt(VarDeclStmt* stmt)
+{
+    LiteralValue value = std::monostate();
+    if(stmt->init != nullptr)
+    {
+        value = evaluate(stmt->init);
+    }
+
+    environment.define(stmt->ident.lexeme, value);
 }
 
 std::string Interpreter::stringify(LiteralValue value)
@@ -205,7 +221,7 @@ void Interpreter::interpret(std::vector<Stmt*> stmts)
             execute(stmt);
         }
     }
-    catch(RuntimeError error)
+    catch(ErrorHandler::RuntimeError error)
     {
         ErrorHandler::runtimeError(error);
     }
