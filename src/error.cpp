@@ -41,7 +41,7 @@ void ErrorHandler::error(Token token, std::string message)
     hadError = true;
 }
 
-void ErrorHandler::runtimeError(Interpreter::RuntimeError error)
+void ErrorHandler::runtimeError(RuntimeError error)
 {
     std::cerr << error.what() << " [line " << error.token.line << "]\n";
     hadRuntimeError = true;
