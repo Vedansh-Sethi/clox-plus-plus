@@ -20,6 +20,7 @@ int main(int argc, char *argv[])
             "Unary    : Token op, Expr* right",
             "Multi : std::vector<Expr*> exprs",
             "Ternary : Expr* condition, Expr* ifTrue, Expr* ifFalse",
+            "Variable : Token ident",
         };
     defineAST(outputDir, "expr", "Expr", types);
 }

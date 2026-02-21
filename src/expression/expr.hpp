@@ -10,6 +10,7 @@ class LiteralExpr;
 class UnaryExpr;
 class MultiExpr;
 class TernaryExpr;
+class VariableExpr;
 
 
 class Expr {
@@ -26,6 +27,7 @@ public:
      virtual void visitUnaryExpr(UnaryExpr* Expr) = 0;
      virtual void visitMultiExpr(MultiExpr* Expr) = 0;
      virtual void visitTernaryExpr(TernaryExpr* Expr) = 0;
+     virtual void visitVariableExpr(VariableExpr* Expr) = 0;
 
 };
 
@@ -103,6 +105,18 @@ public:
 
      void accept(ExprVisitor* visitor) override {
          visitor->visitTernaryExpr(this);
+     }
+ };
+
+class VariableExpr : public Expr {
+
+public: 
+     Token ident;
+
+     VariableExpr(Token ident) : ident(ident) {}
+
+     void accept(ExprVisitor* visitor) override {
+         visitor->visitVariableExpr(this);
      }
  };
 
