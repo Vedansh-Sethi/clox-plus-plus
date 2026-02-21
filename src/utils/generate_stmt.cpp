@@ -13,6 +13,7 @@ int main(int argc, char *argv[])
         {
             "Expr : Expr* expr",
             "Print : Expr* expr",
+            "VarDecl : Token ident, Expr* init",
         };
     defineAST(outputDir, "stmt", "Stmt", types);
 }

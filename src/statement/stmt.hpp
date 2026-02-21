@@ -1,11 +1,13 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include "token/token.hpp"
 #include "expression/expr.hpp"
 
 class StmtVisitor;
 class ExprStmt;
 class PrintStmt;
+class VarDeclStmt;
 
 
 class Stmt {
@@ -18,6 +20,7 @@ class StmtVisitor {
 public:
      virtual void visitExprStmt(ExprStmt* Stmt) = 0;
      virtual void visitPrintStmt(PrintStmt* Stmt) = 0;
+     virtual void visitVarDeclStmt(VarDeclStmt* Stmt) = 0;
 
 };
 
@@ -42,6 +45,19 @@ public:
 
      void accept(StmtVisitor* visitor) override {
          visitor->visitPrintStmt(this);
+     }
+ };
+
+class VarDeclStmt : public Stmt {
+
+public: 
+     Token ident;
+     Expr* init;
+
+     VarDeclStmt(Token ident,Expr* init) : ident(ident), init(init) {}
+
+     void accept(StmtVisitor* visitor) override {
+         visitor->visitVarDeclStmt(this);
      }
  };
 
