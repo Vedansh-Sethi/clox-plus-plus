@@ -9,19 +9,28 @@ void Environment::define(std::string ident, LiteralValue value)
 
 LiteralValue Environment::get(Token ident)
 {
-    if(values.count(ident.lexeme))
+    if (values.count(ident.lexeme))
     {
         return values[ident.lexeme];
     }
+
+    if (enclosing != nullptr)
+        return enclosing->get(ident);
 
     throw ErrorHandler::RuntimeError(ident, "Undefined variable " + ident.lexeme + ".");
 }
 
 void Environment::assign(Token ident, LiteralValue value)
 {
-    if(values.count(ident.lexeme))
+    if (values.count(ident.lexeme))
     {
         values[ident.lexeme] = value;
+        return;
+    }
+
+    if (enclosing != nullptr)
+    {
+        enclosing->assign(ident, value);
         return;
     }
 
