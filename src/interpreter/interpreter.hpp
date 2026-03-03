@@ -12,8 +12,9 @@ private:
     // private variables
     LiteralValue result;
     LiteralValue evaluate(Expr *expr);
-    Environment environment;
+    Environment* environment;
     void execute(Stmt *stmt);
+    void executeBlock(std::vector<Stmt*> stmts, Environment* enclosed);
 
 private:
     // expression interpreting functions
@@ -30,9 +31,11 @@ private:
     void visitPrintStmt(PrintStmt* stmt) override;
     void visitExprStmt(ExprStmt* stmt) override;
     void visitVarDeclStmt(VarDeclStmt* stmt) override;
-
+    void visitBlockStmt(BlockStmt* stmt) override;
 
 public:
+    Interpreter() : environment(new Environment())
+    {}
     void interpret(std::vector<Stmt*> stmts);
 
 private:

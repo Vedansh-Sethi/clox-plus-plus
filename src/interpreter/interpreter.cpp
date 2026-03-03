@@ -11,9 +11,28 @@ LiteralValue Interpreter::evaluate(Expr *expr)
     return result;
 }
 
-void Interpreter::execute(Stmt* stmt)
+void Interpreter::execute(Stmt *stmt)
 {
     stmt->accept(this);
+}
+
+void Interpreter::executeBlock(std::vector<Stmt *> stmts, Environment *enclosed)
+{
+    Environment* previous = this->environment;
+
+    struct EnvironmentStorage
+    {
+        Interpreter* interpreter;
+        Environment* previous;
+        ~EnvironmentStorage() {interpreter->environment = previous;}
+    };
+
+    EnvironmentStorage storage{this, previous};
+    this->environment = enclosed;
+    for(Stmt* stmt : stmts)
+    {
+        execute(stmt);
+    }
 }
 
 bool Interpreter::isTruthy(LiteralValue value)
@@ -22,7 +41,7 @@ bool Interpreter::isTruthy(LiteralValue value)
         return false;
     if (std::holds_alternative<bool>(value))
         return std::get<bool>(value);
-    if(std::holds_alternative<double>(value))
+    if (std::holds_alternative<double>(value))
     {
         return std::get<double>(value);
     }
@@ -145,7 +164,7 @@ void Interpreter::visitBinaryExpr(BinaryExpr *expr)
 void Interpreter::visitMultiExpr(MultiExpr *expr)
 {
     std::vector<LiteralValue> values;
-    for(Expr* expression: expr->exprs)
+    for (Expr *expression : expr->exprs)
     {
         values.push_back(evaluate(expression));
     }
@@ -164,37 +183,41 @@ void Interpreter::visitTernaryExpr(TernaryExpr *expr)
 
 void Interpreter::visitVariableExpr(VariableExpr *expr)
 {
-    result = environment.get(expr->ident);
+    result = environment->get(expr->ident);
 }
 
 void Interpreter::visitAssignExpr(AssignExpr *expr)
 {
     LiteralValue value = evaluate(expr->value);
     result = value;
-    environment.assign(expr->ident, value);
-
+    environment->assign(expr->ident, value);
 }
 
-void Interpreter::visitExprStmt(ExprStmt* stmt)
+void Interpreter::visitExprStmt(ExprStmt *stmt)
 {
     evaluate(stmt->expr);
 }
 
-void Interpreter::visitPrintStmt(PrintStmt* stmt)
+void Interpreter::visitPrintStmt(PrintStmt *stmt)
 {
     LiteralValue value = evaluate(stmt->expr);
     std::cout << stringify(value) << std::endl;
 }
 
-void Interpreter::visitVarDeclStmt(VarDeclStmt* stmt)
+void Interpreter::visitVarDeclStmt(VarDeclStmt *stmt)
 {
     LiteralValue value = std::monostate();
-    if(stmt->init != nullptr)
+    if (stmt->init != nullptr)
     {
         value = evaluate(stmt->init);
     }
 
-    environment.define(stmt->ident.lexeme, value);
+    environment->define(stmt->ident.lexeme, value);
+}
+
+void Interpreter::visitBlockStmt(BlockStmt *stmt)
+{
+    executeBlock(stmt->stmts, new Environment(environment));
 }
 
 std::string Interpreter::stringify(LiteralValue value)
@@ -220,16 +243,16 @@ std::string Interpreter::stringify(LiteralValue value)
     }
 }
 
-void Interpreter::interpret(std::vector<Stmt*> stmts)
+void Interpreter::interpret(std::vector<Stmt *> stmts)
 {
-    try 
+    try
     {
-        for(Stmt* stmt : stmts)
+        for (Stmt *stmt : stmts)
         {
             execute(stmt);
         }
     }
-    catch(ErrorHandler::RuntimeError error)
+    catch (ErrorHandler::RuntimeError error)
     {
         ErrorHandler::runtimeError(error);
     }
