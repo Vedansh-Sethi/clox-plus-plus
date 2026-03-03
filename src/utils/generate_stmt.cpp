@@ -11,6 +11,7 @@ int main(int argc, char *argv[])
     std::string outputDir = argv[1];
     std::vector<std::string> types =
         {
+            "Block : std::vector<Stmt*> stmts",
             "Expr : Expr* expr",
             "Print : Expr* expr",
             "VarDecl : Token ident, Expr* init",

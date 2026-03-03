@@ -5,6 +5,7 @@
 #include "expression/expr.hpp"
 
 class StmtVisitor;
+class BlockStmt;
 class ExprStmt;
 class PrintStmt;
 class VarDeclStmt;
@@ -18,11 +19,24 @@ public:
 class StmtVisitor {
 
 public:
+     virtual void visitBlockStmt(BlockStmt* Stmt) = 0;
      virtual void visitExprStmt(ExprStmt* Stmt) = 0;
      virtual void visitPrintStmt(PrintStmt* Stmt) = 0;
      virtual void visitVarDeclStmt(VarDeclStmt* Stmt) = 0;
 
 };
+
+class BlockStmt : public Stmt {
+
+public: 
+     std::vector<Stmt*> stmts;
+
+     BlockStmt(std::vector<Stmt*> stmts) : stmts(stmts) {}
+
+     void accept(StmtVisitor* visitor) override {
+         visitor->visitBlockStmt(this);
+     }
+ };
 
 class ExprStmt : public Stmt {
 
