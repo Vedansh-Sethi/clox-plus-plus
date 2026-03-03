@@ -26,7 +26,7 @@ void run(std::string source)
     if (ErrorHandler::hadError)
         return;
 
-    ASTPrinter *printer = ASTPrinter::getInstance();
+    // ASTPrinter *printer = ASTPrinter::getInstance();
     // std::cout << printer->print(expressions) << std::endl;
 
     std::cout << "Starting Evaluating..." << std::endl;
