@@ -32,6 +32,7 @@ private:
     Stmt *statement();
     Stmt *printStmt();
     Stmt *exprStmt();
+    Stmt *blockStmt();
 
 public:
     Parser(std::vector<Token> tokens) : tokens(tokens) {}

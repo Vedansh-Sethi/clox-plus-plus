@@ -256,7 +256,6 @@ Expr *Parser::primary()
         consume(RIGHT_PAREN, "Expect \")\" after expression");
         return new GroupingExpr(expr);
     }
-
     ErrorHandler::error(peek(), "Expected Expression");
     advance();
     if (peek().type == END_FILE)
@@ -287,8 +286,9 @@ Stmt *Parser::statement()
 {
     if (match(PRINT))
         return printStmt();
-
+    if (match<TokenType>(LEFT_BRACE)) return blockStmt();
     return exprStmt();
+
 }
 
 Stmt *Parser::varDeclStmt()
@@ -321,6 +321,20 @@ Stmt *Parser::declaration()
         synchronize();
         return nullptr;
     }
+}
+
+Stmt* Parser::blockStmt()
+{
+    std::vector<Stmt*> stmts;
+    
+    while(!check(RIGHT_BRACE) && !isAtEnd())
+    {
+        stmts.push_back(declaration());
+    }
+
+    consume(RIGHT_BRACE, "Expected \"}\" after block");
+    
+    return new BlockStmt(stmts);
 }
 
 std::vector<Stmt *> Parser::parse()
