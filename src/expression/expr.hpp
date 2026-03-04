@@ -12,6 +12,7 @@ class UnaryExpr;
 class MultiExpr;
 class TernaryExpr;
 class VariableExpr;
+class LogicalExpr;
 
 
 class Expr {
@@ -30,6 +31,7 @@ public:
      virtual void visitMultiExpr(MultiExpr* Expr) = 0;
      virtual void visitTernaryExpr(TernaryExpr* Expr) = 0;
      virtual void visitVariableExpr(VariableExpr* Expr) = 0;
+     virtual void visitLogicalExpr(LogicalExpr* Expr) = 0;
 
 };
 
@@ -132,6 +134,20 @@ public:
 
      void accept(ExprVisitor* visitor) override {
          visitor->visitVariableExpr(this);
+     }
+ };
+
+class LogicalExpr : public Expr {
+
+public: 
+     Expr* left;
+     Token op;
+     Expr* right;
+
+     LogicalExpr(Expr* left,Token op,Expr* right) : left(left), op(op), right(right) {}
+
+     void accept(ExprVisitor* visitor) override {
+         visitor->visitLogicalExpr(this);
      }
  };
 
