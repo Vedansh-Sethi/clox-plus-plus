@@ -2,7 +2,6 @@ set(SOURCES
     main.cpp
     token/token.cpp
     scanner/scanner.cpp
-    utils/ast_printer/ast_printer.cpp
     error.cpp
     parser/parser.cpp
     interpreter/interpreter.cpp
