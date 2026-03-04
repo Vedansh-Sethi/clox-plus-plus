@@ -153,7 +153,7 @@ Expr *Parser::logical_and()
 {
     Expr *expr = equality();
 
-    while(match(AND))
+    while (match(AND))
     {
         Token op = previous();
         Expr *right = equality();
@@ -312,15 +312,9 @@ Stmt *Parser::exprStmt()
 
 Stmt *Parser::ifStmt()
 {
-    if (!match<TokenType>(LEFT_PAREN))
-    {
-        ErrorHandler::RuntimeError(peek(), "Expected \"(\" at the start of if statement");
-    }
+    consume(LEFT_PAREN, "Expected \"(\" at the start of if statement");
     Expr *condition = expression();
-    if (!match<TokenType>(RIGHT_PAREN))
-    {
-        ErrorHandler::RuntimeError(peek(), "Expected \")\" after end of expression");
-    }
+    consume(RIGHT_PAREN, "Expected \")\" after end of expression");
     Stmt *trueStmt = statement();
     Stmt *falseStmt = nullptr;
     if (match<TokenType>(ELSE))
@@ -328,6 +322,15 @@ Stmt *Parser::ifStmt()
         falseStmt = statement();
     }
     return new IfStmt(condition, trueStmt, falseStmt);
+}
+
+Stmt *Parser::whileStmt()
+{
+    consume(LEFT_PAREN, "Expected \"(\" at the start of while");
+    Expr *condition = expression();
+    consume(RIGHT_PAREN, "Expected \")\" after expression");
+    Stmt *task = statement();
+    return new WhileStmt(condition, task);
 }
 
 Stmt *Parser::statement()
@@ -338,6 +341,8 @@ Stmt *Parser::statement()
         return blockStmt();
     if (match<TokenType>(IF))
         return ifStmt();
+    if (match<TokenType>(WHILE))
+        return whileStmt();
     return exprStmt();
 }
 

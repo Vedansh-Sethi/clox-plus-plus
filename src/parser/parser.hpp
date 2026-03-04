@@ -36,6 +36,7 @@ private:
     Stmt *exprStmt();
     Stmt *blockStmt();
     Stmt *ifStmt();
+    Stmt *whileStmt();
 
 public:
     Parser(std::vector<Token> tokens) : tokens(tokens) {}
