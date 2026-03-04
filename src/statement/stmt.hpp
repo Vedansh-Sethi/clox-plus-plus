@@ -9,6 +9,7 @@ class ExprStmt;
 class PrintStmt;
 class VarDeclStmt;
 class IfStmt;
+class WhileStmt;
 
 
 class Stmt {
@@ -24,6 +25,7 @@ public:
      virtual void visitPrintStmt(PrintStmt* Stmt) = 0;
      virtual void visitVarDeclStmt(VarDeclStmt* Stmt) = 0;
      virtual void visitIfStmt(IfStmt* Stmt) = 0;
+     virtual void visitWhileStmt(WhileStmt* Stmt) = 0;
 
 };
 
@@ -87,6 +89,19 @@ public:
 
      void accept(StmtVisitor* visitor) override {
          visitor->visitIfStmt(this);
+     }
+ };
+
+class WhileStmt : public Stmt {
+
+public: 
+     Expr* condition;
+     Stmt* task;
+
+     WhileStmt(Expr* condition,Stmt* task) : condition(condition), task(task) {}
+
+     void accept(StmtVisitor* visitor) override {
+         visitor->visitWhileStmt(this);
      }
  };
 
