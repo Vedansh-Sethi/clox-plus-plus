@@ -26,12 +26,14 @@ private:
     void visitTernaryExpr(TernaryExpr *expr) override;
     void visitVariableExpr(VariableExpr *expr) override;
     void visitAssignExpr(AssignExpr *expr) override;
+    void visitLogicalExpr(LogicalExpr *expr) override;
 
     // statement interpreting functions
     void visitPrintStmt(PrintStmt* stmt) override;
     void visitExprStmt(ExprStmt* stmt) override;
     void visitVarDeclStmt(VarDeclStmt* stmt) override;
     void visitBlockStmt(BlockStmt* stmt) override;
+    void visitIfStmt(IfStmt* stmt) override;
 
 public:
     Interpreter() : environment(new Environment())

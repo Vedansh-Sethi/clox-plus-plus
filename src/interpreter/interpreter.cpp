@@ -18,18 +18,18 @@ void Interpreter::execute(Stmt *stmt)
 
 void Interpreter::executeBlock(std::vector<Stmt *> stmts, Environment *enclosed)
 {
-    Environment* previous = this->environment;
+    Environment *previous = this->environment;
 
     struct EnvironmentStorage
     {
-        Interpreter* interpreter;
-        Environment* previous;
-        ~EnvironmentStorage() {interpreter->environment = previous;}
+        Interpreter *interpreter;
+        Environment *previous;
+        ~EnvironmentStorage() { interpreter->environment = previous; }
     };
 
     EnvironmentStorage storage{this, previous};
     this->environment = enclosed;
-    for(Stmt* stmt : stmts)
+    for (Stmt *stmt : stmts)
     {
         execute(stmt);
     }
@@ -193,6 +193,31 @@ void Interpreter::visitAssignExpr(AssignExpr *expr)
     environment->assign(expr->ident, value);
 }
 
+void Interpreter::visitLogicalExpr(LogicalExpr *expr)
+{
+    LiteralValue left = evaluate(expr->left);
+
+    if (expr->op.type == AND)
+    {
+        if (!isTruthy(left))
+        {
+            result = left;
+            return;
+        }
+    }
+    else
+    {
+        if (isTruthy(left))
+        {
+            result = left;
+            return;
+        }
+    }
+
+    result = evaluate(expr->right);
+    return;
+}
+
 void Interpreter::visitExprStmt(ExprStmt *stmt)
 {
     evaluate(stmt->expr);
@@ -218,6 +243,18 @@ void Interpreter::visitVarDeclStmt(VarDeclStmt *stmt)
 void Interpreter::visitBlockStmt(BlockStmt *stmt)
 {
     executeBlock(stmt->stmts, new Environment(environment));
+}
+
+void Interpreter::visitIfStmt(IfStmt *stmt)
+{
+    if (isTruthy(evaluate(stmt->condition)))
+    {
+        execute(stmt->trueStmt);
+    }
+    else if (stmt->falseStmt != nullptr)
+    {
+        execute(stmt->falseStmt);
+    }
 }
 
 std::string Interpreter::stringify(LiteralValue value)
