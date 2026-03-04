@@ -2,13 +2,13 @@
 #include <iostream>
 #include <vector>
 #include "token/token.hpp"
-#include "expression/expr.hpp"
 
 class StmtVisitor;
 class BlockStmt;
 class ExprStmt;
 class PrintStmt;
 class VarDeclStmt;
+class IfStmt;
 
 
 class Stmt {
@@ -23,6 +23,7 @@ public:
      virtual void visitExprStmt(ExprStmt* Stmt) = 0;
      virtual void visitPrintStmt(PrintStmt* Stmt) = 0;
      virtual void visitVarDeclStmt(VarDeclStmt* Stmt) = 0;
+     virtual void visitIfStmt(IfStmt* Stmt) = 0;
 
 };
 
@@ -72,6 +73,20 @@ public:
 
      void accept(StmtVisitor* visitor) override {
          visitor->visitVarDeclStmt(this);
+     }
+ };
+
+class IfStmt : public Stmt {
+
+public: 
+     Expr* condition;
+     Stmt* trueStmt;
+     Stmt* falseStmt;
+
+     IfStmt(Expr* condition,Stmt* trueStmt,Stmt* falseStmt) : condition(condition), trueStmt(trueStmt), falseStmt(falseStmt) {}
+
+     void accept(StmtVisitor* visitor) override {
+         visitor->visitIfStmt(this);
      }
  };
 

@@ -15,6 +15,7 @@ int main(int argc, char *argv[])
             "Expr : Expr* expr",
             "Print : Expr* expr",
             "VarDecl : Token ident, Expr* init",
+            "If : Expr* condition, Stmt* trueStmt, Stmt* falseStmt",
         };
     defineAST(outputDir, "stmt", "Stmt", types);
 }
