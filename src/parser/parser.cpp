@@ -333,6 +333,59 @@ Stmt *Parser::whileStmt()
     return new WhileStmt(condition, task);
 }
 
+Stmt *Parser::forStmt()
+{
+    consume(LEFT_PAREN, "Expected \"(\" at the start of for");
+    Stmt *initializer;
+    if(match(SEMICOLON))
+    {
+        initializer = nullptr;
+    }
+    else if(match(VAR))
+    {
+        initializer = varDeclStmt();
+    }
+    else 
+    {
+        initializer = exprStmt();
+    }
+    
+    Expr* condition = nullptr;
+    if(!match(SEMICOLON))
+    {
+        condition = expression();
+    }
+    consume(SEMICOLON, "Expected \";\" after expression");
+
+    Expr* increment = nullptr;
+    if(!check(RIGHT_PAREN))
+    {
+        increment = expression();
+    }
+    consume(RIGHT_PAREN, "Expected \")\" after expressions");
+
+    Stmt* task = statement();
+
+    if(increment != nullptr)
+    {
+        Stmt* incrementStmt = new ExprStmt(increment);
+        std::vector<Stmt*> body = {task, incrementStmt};
+        task = new BlockStmt(body);
+    }
+
+    if(condition == nullptr) condition = new LiteralExpr(true);
+
+    task = new WhileStmt(condition, task);
+
+    if(initializer != nullptr)
+    {
+        std::vector<Stmt*> body = {initializer, task};
+        task = new BlockStmt(body);
+    }
+
+    return task;
+}
+
 Stmt *Parser::statement()
 {
     if (match(PRINT))
@@ -343,6 +396,8 @@ Stmt *Parser::statement()
         return ifStmt();
     if (match<TokenType>(WHILE))
         return whileStmt();
+    if (match<TokenType>(FOR))
+        return forStmt();
     return exprStmt();
 }
 
