@@ -53,9 +53,10 @@ This is the C++ implementation of the JLox compiler made in "Crafting Interprete
 - `program` -> `declaration`* EOF;
 - `declaration` -> `varDeclStmt` | `stmt`;
 - `varDeclStmt` -> "var" IDENTIFIER ("="  `expression`)? ";";
-- `stmt` -> `exprStmt` | `printStmt` | `block` | `ifStmt` | `whileStmt`;
+- `stmt` -> `exprStmt` | `printStmt` | `block` | `ifStmt` | `whileStmt` | `forStmt`;
 - `block` -> "{" `declaration`* "}"
 - `exprStmt` -> `expression` ";" ;
 - `printStmt` -> "print" `expression` ";";
 - `ifStmt` -> "if" "(" `expression` ")" `block` ( "else" `stmt`)? ;
 - `whileStmt` -> "while" "(" `expression` ")" `statement`;
+- `forStmt` -> "for" "(" (`varDeclStmt` | `exprStmt` | ";") `expression`? ";" `expression`? ")" `statement`;
