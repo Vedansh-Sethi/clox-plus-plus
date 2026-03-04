@@ -257,6 +257,14 @@ void Interpreter::visitIfStmt(IfStmt *stmt)
     }
 }
 
+void Interpreter::visitWhileStmt(WhileStmt* stmt)
+{
+    while(isTruthy(evaluate(stmt->condition)))
+    {
+        execute(stmt->task);
+    }
+}
+
 std::string Interpreter::stringify(LiteralValue value)
 {
     if (std::holds_alternative<std::monostate>(value))

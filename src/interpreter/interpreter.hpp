@@ -34,6 +34,7 @@ private:
     void visitVarDeclStmt(VarDeclStmt* stmt) override;
     void visitBlockStmt(BlockStmt* stmt) override;
     void visitIfStmt(IfStmt* stmt) override;
+    void visitWhileStmt(WhileStmt* stmt) override;
 
 public:
     Interpreter() : environment(new Environment())
