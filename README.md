@@ -39,7 +39,9 @@ This is the C++ implementation of the JLox compiler made in "Crafting Interprete
 - `expression` -> `Comma Separated Expressions`
 - `Comma Separated Expressions` -> `ternary` (("?") `ternary`)*;
 -  `ternary` -> `assignment` ( ("?") `ternary` (":") `ternary` );
--  `assignment` -> IDENTIFIER "="  `assignment` | `equality`
+-  `assignment` -> IDENTIFIER "="  `assignment` | `logic_or`;
+- `logic_or` -> `logic_and` ("or" `logic_and`)* ;
+- `logic_and` -> `equality` ("and" `equality`)* ;
 - `equality` -> `comparison` (("!=" | "==") `comparison`)*;
 - `comparison` -> `term` ((">" | ">=" | "<" | "<=") `term`)*;
 - `term` -> `factor` (("+" | "-") `factor`) *;
@@ -51,8 +53,9 @@ This is the C++ implementation of the JLox compiler made in "Crafting Interprete
 - `program` -> `declaration`* EOF;
 - `declaration` -> `varDeclStmt` | `stmt`;
 - `varDeclStmt` -> "var" IDENTIFIER ("="  `expression`)? ";";
-- `stmt` -> `exprStmt` | `printStmt` | `block`;
+- `stmt` -> `exprStmt` | `printStmt` | `block` | `ifStmt`;
 - `block` -> "{" `declaration`* "}"
 - `exprStmt` -> `expression` ";" ;
 - `printStmt` -> "print" `expression` ";";
+- `ifStmt` -> "if" "(" `expression` ")" `block` ( "else" `stmt`)? ;
 
