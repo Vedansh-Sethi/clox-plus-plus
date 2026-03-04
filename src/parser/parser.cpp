@@ -117,19 +117,47 @@ Expr *Parser::commaSeparatedExpressions()
 
 Expr *Parser::assignment()
 {
-    Expr *expr = equality();
+    Expr *expr = logical_or();
 
     if (match(EQUAL))
     {
         Token equals = previous();
         Expr *value = assignment();
-        if(VariableExpr* varExpr = dynamic_cast<VariableExpr*>(expr))
+        if (VariableExpr *varExpr = dynamic_cast<VariableExpr *>(expr))
         {
             Token ident = varExpr->ident;
             return new AssignExpr(ident, value);
         }
 
         ErrorHandler::error(equals, "Invalid Assignment Target");
+    }
+
+    return expr;
+}
+
+Expr *Parser::logical_or()
+{
+    Expr *expr = logical_and();
+
+    while (!isAtEnd() && match(OR))
+    {
+        Token op = previous();
+        Expr *right = logical_or();
+        expr = new LogicalExpr(expr, op, right);
+    }
+
+    return expr;
+}
+
+Expr *Parser::logical_and()
+{
+    Expr *expr = equality();
+
+    while(match(AND))
+    {
+        Token op = previous();
+        Expr *right = equality();
+        expr = new LogicalExpr(expr, op, right);
     }
 
     return expr;
@@ -282,13 +310,35 @@ Stmt *Parser::exprStmt()
     return new ExprStmt(value);
 }
 
+Stmt *Parser::ifStmt()
+{
+    if (!match<TokenType>(LEFT_PAREN))
+    {
+        ErrorHandler::RuntimeError(peek(), "Expected \"(\" at the start of if statement");
+    }
+    Expr *condition = expression();
+    if (!match<TokenType>(RIGHT_PAREN))
+    {
+        ErrorHandler::RuntimeError(peek(), "Expected \")\" after end of expression");
+    }
+    Stmt *trueStmt = statement();
+    Stmt *falseStmt = nullptr;
+    if (match<TokenType>(ELSE))
+    {
+        falseStmt = statement();
+    }
+    return new IfStmt(condition, trueStmt, falseStmt);
+}
+
 Stmt *Parser::statement()
 {
     if (match(PRINT))
         return printStmt();
-    if (match<TokenType>(LEFT_BRACE)) return blockStmt();
+    if (match<TokenType>(LEFT_BRACE))
+        return blockStmt();
+    if (match<TokenType>(IF))
+        return ifStmt();
     return exprStmt();
-
 }
 
 Stmt *Parser::varDeclStmt()
@@ -323,17 +373,17 @@ Stmt *Parser::declaration()
     }
 }
 
-Stmt* Parser::blockStmt()
+Stmt *Parser::blockStmt()
 {
-    std::vector<Stmt*> stmts;
-    
-    while(!check(RIGHT_BRACE) && !isAtEnd())
+    std::vector<Stmt *> stmts;
+
+    while (!check(RIGHT_BRACE) && !isAtEnd())
     {
         stmts.push_back(declaration());
     }
 
     consume(RIGHT_BRACE, "Expected \"}\" after block");
-    
+
     return new BlockStmt(stmts);
 }
 

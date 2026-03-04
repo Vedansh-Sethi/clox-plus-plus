@@ -19,6 +19,8 @@ private:
     Expr *commaSeparatedExpressions();
     Expr *ternary();
     Expr *assignment();
+    Expr *logical_or();
+    Expr *logical_and();
     Expr *equality();
     Expr *comparison();
     Expr *term();
@@ -33,6 +35,7 @@ private:
     Stmt *printStmt();
     Stmt *exprStmt();
     Stmt *blockStmt();
+    Stmt *ifStmt();
 
 public:
     Parser(std::vector<Token> tokens) : tokens(tokens) {}
