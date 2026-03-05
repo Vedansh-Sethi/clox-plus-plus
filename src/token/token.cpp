@@ -92,7 +92,11 @@ std::string tokenTypeToString(TokenType type)
         return "VAR";
     case WHILE:
         return "WHILE";
-
+    case BREAK:
+        return "BREAK";
+    case CONTINUE:
+        return "CONTINUE";
+    
     case END_FILE:
         return "EOF";
     default:

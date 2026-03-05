@@ -22,7 +22,10 @@ static std::map<std::string, TokenType> keywords =
         {"this", THIS},
         {"true", TRUE},
         {"var", VAR},
-        {"while", WHILE}};
+        {"while", WHILE},
+        {"break", BREAK},
+        {"continue", CONTINUE},
+    };
 
 inline bool Scanner::isAtEnd() const
 {

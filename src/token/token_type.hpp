@@ -50,6 +50,8 @@ enum TokenType
     TRUE,
     VAR,
     WHILE,
+    BREAK,
+    CONTINUE,
 
     END_FILE
 };
