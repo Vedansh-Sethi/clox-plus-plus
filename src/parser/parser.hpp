@@ -12,6 +12,7 @@ private:
     // private variables
     const std::vector<Token> tokens;
     int current = 0;
+    int loopCount = 0;
 
 private:
     // expression parsing functions
@@ -38,6 +39,8 @@ private:
     Stmt *ifStmt();
     Stmt *whileStmt();
     Stmt *forStmt();
+    Stmt *breakStmt();
+    Stmt *continueStmt();
 
 public:
     Parser(std::vector<Token> tokens) : tokens(tokens) {}
