@@ -12,9 +12,9 @@ private:
     // private variables
     LiteralValue result;
     LiteralValue evaluate(Expr *expr);
-    Environment* environment;
+    Environment *environment;
     void execute(Stmt *stmt);
-    void executeBlock(std::vector<Stmt*> stmts, Environment* enclosed);
+    void executeBlock(std::vector<Stmt *> stmts, Environment *enclosed);
 
 private:
     // expression interpreting functions
@@ -29,17 +29,21 @@ private:
     void visitLogicalExpr(LogicalExpr *expr) override;
 
     // statement interpreting functions
-    void visitPrintStmt(PrintStmt* stmt) override;
-    void visitExprStmt(ExprStmt* stmt) override;
-    void visitVarDeclStmt(VarDeclStmt* stmt) override;
-    void visitBlockStmt(BlockStmt* stmt) override;
-    void visitIfStmt(IfStmt* stmt) override;
-    void visitWhileStmt(WhileStmt* stmt) override;
+    void visitPrintStmt(PrintStmt *stmt) override;
+    void visitExprStmt(ExprStmt *stmt) override;
+    void visitVarDeclStmt(VarDeclStmt *stmt) override;
+    void visitBlockStmt(BlockStmt *stmt) override;
+    void visitIfStmt(IfStmt *stmt) override;
+    void visitWhileStmt(WhileStmt *stmt) override;
+    void visitBreakStmt(BreakStmt *stmt) override;
+    void visitContinueStmt(ContinueStmt *stmt) override;
+    void visitForStmt(ForStmt *stmt) override;
 
 public:
     Interpreter() : environment(new Environment())
-    {}
-    void interpret(std::vector<Stmt*> stmts);
+    {
+    }
+    void interpret(std::vector<Stmt *> stmts);
 
 private:
     // helper functions
@@ -48,4 +52,16 @@ private:
     bool checkOperandValidity(Token opToken, LiteralValue operand);
     bool isEqual(LiteralValue left, LiteralValue right);
     std::string stringify(LiteralValue value);
+    class BreakInstruction
+    {
+    };
+    class ContinueInstruction
+    {
+    };
+    struct EnvironmentStorage
+    {
+        Interpreter *interpreter;
+        Environment *previous;
+        ~EnvironmentStorage() { interpreter->environment = previous; }
+    };
 };

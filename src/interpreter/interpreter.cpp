@@ -19,14 +19,6 @@ void Interpreter::execute(Stmt *stmt)
 void Interpreter::executeBlock(std::vector<Stmt *> stmts, Environment *enclosed)
 {
     Environment *previous = this->environment;
-
-    struct EnvironmentStorage
-    {
-        Interpreter *interpreter;
-        Environment *previous;
-        ~EnvironmentStorage() { interpreter->environment = previous; }
-    };
-
     EnvironmentStorage storage{this, previous};
     this->environment = enclosed;
     for (Stmt *stmt : stmts)
@@ -257,12 +249,66 @@ void Interpreter::visitIfStmt(IfStmt *stmt)
     }
 }
 
-void Interpreter::visitWhileStmt(WhileStmt* stmt)
+void Interpreter::visitWhileStmt(WhileStmt *stmt)
 {
-    while(isTruthy(evaluate(stmt->condition)))
+    try
     {
-        execute(stmt->task);
+        while (isTruthy(evaluate(stmt->condition)))
+        {
+            try
+            {
+                execute(stmt->task);
+            }
+            catch (ContinueInstruction &continueInstruction)
+            {
+            }
+        }
     }
+    catch (BreakInstruction &breakInstruction)
+    {
+    }
+}
+
+void Interpreter::visitForStmt(ForStmt *stmt)
+{
+    Environment* previous = this->environment;
+    EnvironmentStorage storage{this, previous};
+    Environment* enclosed = new Environment(this->environment);
+    this->environment = enclosed;
+    if (stmt->initializer != nullptr)
+    {
+        execute(stmt->initializer);
+    }
+    try
+    {
+        while (isTruthy(evaluate(stmt->condition)))
+        {
+            try
+            {
+                execute(stmt->task);
+            }
+            catch (ContinueInstruction)
+            {
+            }
+            if (stmt->increment != nullptr)
+            {
+                evaluate(stmt->increment);
+            }
+        }
+    }
+    catch (BreakInstruction)
+    {
+    }
+}
+
+void Interpreter::visitBreakStmt(BreakStmt *stmt)
+{
+    throw BreakInstruction();
+}
+
+void Interpreter::visitContinueStmt(ContinueStmt *stmt)
+{
+    throw ContinueInstruction();
 }
 
 std::string Interpreter::stringify(LiteralValue value)
