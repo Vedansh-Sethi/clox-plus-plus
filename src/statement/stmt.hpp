@@ -10,6 +10,9 @@ class PrintStmt;
 class VarDeclStmt;
 class IfStmt;
 class WhileStmt;
+class ForStmt;
+class BreakStmt;
+class ContinueStmt;
 
 
 class Stmt {
@@ -26,6 +29,9 @@ public:
      virtual void visitVarDeclStmt(VarDeclStmt* Stmt) = 0;
      virtual void visitIfStmt(IfStmt* Stmt) = 0;
      virtual void visitWhileStmt(WhileStmt* Stmt) = 0;
+     virtual void visitForStmt(ForStmt* Stmt) = 0;
+     virtual void visitBreakStmt(BreakStmt* Stmt) = 0;
+     virtual void visitContinueStmt(ContinueStmt* Stmt) = 0;
 
 };
 
@@ -102,6 +108,45 @@ public:
 
      void accept(StmtVisitor* visitor) override {
          visitor->visitWhileStmt(this);
+     }
+ };
+
+class ForStmt : public Stmt {
+
+public: 
+     Stmt* initializer;
+     Expr* condition;
+     Expr* increment;
+     Stmt* task;
+
+     ForStmt(Stmt* initializer,Expr* condition,Expr* increment,Stmt* task) : initializer(initializer), condition(condition), increment(increment), task(task) {}
+
+     void accept(StmtVisitor* visitor) override {
+         visitor->visitForStmt(this);
+     }
+ };
+
+class BreakStmt : public Stmt {
+
+public: 
+     Token keyword;
+
+     BreakStmt(Token keyword) : keyword(keyword) {}
+
+     void accept(StmtVisitor* visitor) override {
+         visitor->visitBreakStmt(this);
+     }
+ };
+
+class ContinueStmt : public Stmt {
+
+public: 
+     Token keyword;
+
+     ContinueStmt(Token keyword) : keyword(keyword) {}
+
+     void accept(StmtVisitor* visitor) override {
+         visitor->visitContinueStmt(this);
      }
  };
 

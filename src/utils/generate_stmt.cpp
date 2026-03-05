@@ -17,6 +17,9 @@ int main(int argc, char *argv[])
             "VarDecl : Token ident, Expr* init",
             "If : Expr* condition, Stmt* trueStmt, Stmt* falseStmt",
             "While : Expr* condition, Stmt* task",
+            "For : Stmt* initializer, Expr* condition, Expr* increment, Stmt* task",
+            "Break : Token keyword",
+            "Continue : Token keyword",
         };
     defineAST(outputDir, "stmt", "Stmt", types);
 }
