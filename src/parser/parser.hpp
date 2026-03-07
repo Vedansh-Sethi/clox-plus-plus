@@ -16,35 +16,36 @@ private:
 
 private:
     // expression parsing functions
-    Expr *expression();
-    Expr *commaSeparatedExpressions();
-    Expr *ternary();
-    Expr *assignment();
-    Expr *logical_or();
-    Expr *logical_and();
-    Expr *equality();
-    Expr *comparison();
-    Expr *term();
-    Expr *factor();
-    Expr *unary();
-    Expr *primary();
+    std::unique_ptr<Expr> expression();
+    std::unique_ptr<Expr> commaSeparatedExpressions();
+    std::unique_ptr<Expr> ternary();
+    std::unique_ptr<Expr> assignment();
+    std::unique_ptr<Expr> logical_or();
+    std::unique_ptr<Expr> logical_and();
+    std::unique_ptr<Expr> equality();
+    std::unique_ptr<Expr> comparison();
+    std::unique_ptr<Expr> term();
+    std::unique_ptr<Expr> factor();
+    std::unique_ptr<Expr> unary();
+    std::unique_ptr<Expr> call();
+    std::unique_ptr<Expr> primary();
 
     // statement parsing functions
-    Stmt *declaration();
-    Stmt *varDeclStmt();
-    Stmt *statement();
-    Stmt *printStmt();
-    Stmt *exprStmt();
-    Stmt *blockStmt();
-    Stmt *ifStmt();
-    Stmt *whileStmt();
-    Stmt *forStmt();
-    Stmt *breakStmt();
-    Stmt *continueStmt();
+    std::unique_ptr<Stmt> declaration();
+    std::unique_ptr<Stmt> varDeclStmt();
+    std::unique_ptr<Stmt> statement();
+    std::unique_ptr<Stmt> printStmt();
+    std::unique_ptr<Stmt> exprStmt();
+    std::unique_ptr<Stmt> blockStmt();
+    std::unique_ptr<Stmt> ifStmt();
+    std::unique_ptr<Stmt> whileStmt();
+    std::unique_ptr<Stmt> forStmt();
+    std::unique_ptr<Stmt> breakStmt();
+    std::unique_ptr<Stmt> continueStmt();
 
 public:
     Parser(std::vector<Token> tokens) : tokens(tokens) {}
-    std::vector<Stmt *> parse();
+    std::vector<std::unique_ptr<Stmt> > parse();
 
 private:
     // helper functions
@@ -57,7 +58,8 @@ private:
     inline Token previous();
     inline Token consume(TokenType type, std::string message);
     inline Token peek(int ahead = 0) const;
-    inline void addExpr(Expr *expr);
+    inline void addExpr(std::unique_ptr<Expr> expr);
+    std::unique_ptr<Expr> finishCall(const std::unique_ptr<Expr>& callee);
 
 private:
     class ParseError : public std::runtime_error

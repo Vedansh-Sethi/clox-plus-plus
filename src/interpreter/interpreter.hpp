@@ -14,7 +14,7 @@ private:
     LiteralValue evaluate(Expr *expr);
     Environment *environment;
     void execute(Stmt *stmt);
-    void executeBlock(std::vector<Stmt *> stmts, Environment *enclosed);
+    void executeBlock(std::vector<std::unique_ptr<Stmt>> stmts, Environment *enclosed);
 
 private:
     // expression interpreting functions
@@ -27,6 +27,7 @@ private:
     void visitVariableExpr(VariableExpr *expr) override;
     void visitAssignExpr(AssignExpr *expr) override;
     void visitLogicalExpr(LogicalExpr *expr) override;
+    void visitCallExpr(CallExpr *expr) override;
 
     // statement interpreting functions
     void visitPrintStmt(PrintStmt *stmt) override;
