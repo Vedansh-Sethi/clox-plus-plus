@@ -10,13 +10,13 @@ void defineType(std::stringstream &writer, std::string baseName, std::string cla
 {
     writer << "class " << className << baseName << " : public " << baseName << " {" << std::endl
            << std::endl;
-    std::vector<std::pair<std::string, std::string>> fieldsVector = splitFields(fields);
+    std::vector<std::pair<std::pair<std::string, std::string>, bool>> fieldsVector = splitFields(fields);
 
     // writing member variables
     writer << "public: " << std::endl;
-    for (std::pair<std::string, std::string> fieldPair : fieldsVector)
+    for (const std::pair<std::pair<std::string, std::string>, bool> &fieldPair : fieldsVector)
     {
-        writer << "     " << fieldPair.first << " " << fieldPair.second << ";" << std::endl;
+        writer << "     " << fieldPair.first.first << " " << fieldPair.first.second << ";" << std::endl;
     }
     writer << std::endl;
 
@@ -24,7 +24,14 @@ void defineType(std::stringstream &writer, std::string baseName, std::string cla
     writer << "     " << className << baseName << "(" << fields << ") : ";
     for (size_t i = 0; i < fieldsVector.size(); i++)
     {
-        writer << fieldsVector[i].second << "(" << fieldsVector[i].second << ")";
+        if(!fieldsVector[i].second)
+        {
+            writer << fieldsVector[i].first.second << "(" << fieldsVector[i].first.second << ")";
+        }
+        else 
+        {
+            writer << fieldsVector[i].first.second << "(std::move(" << fieldsVector[i].first.second << "))";
+        }
         if (i != fieldsVector.size() - 1)
             writer << ", ";
     }
@@ -55,6 +62,7 @@ void defineAST(std::string outputDir, std::string fileName, std::string baseName
     writer << "#pragma once" << std::endl;
     writer << "#include <iostream>" << std::endl;
     writer << "#include <vector>" << std::endl;
+    writer << "#include <memory>" << std::endl;
     writer << "#include \"token/token.hpp\"" << std::endl
            << std::endl;
 

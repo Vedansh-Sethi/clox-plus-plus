@@ -3,7 +3,7 @@
 #include <sstream>
 #include <vector>
 
-std::vector<std::pair<std::string, std::string>> splitFields(std::string fields)
+std::vector<std::pair<std::pair<std::string, std::string>, bool>> splitFields(std::string fields)
 {
     // split the arguments in fields
     const std::string del1 = ",";
@@ -19,15 +19,19 @@ std::vector<std::pair<std::string, std::string>> splitFields(std::string fields)
     fields.erase(0, pos + del1.length());
 
     // split every field in a pair of {type, fieldName}
-    std::vector<std::pair<std::string, std::string>> splitInFields;
+    std::vector<std::pair<std::pair<std::string, std::string>, bool>> splitInFields;
     for (std::string field : splitFields)
     {
         std::stringstream pairStream(field);
         std::string type, name;
         pairStream >> type;
         pairStream >> name;
-        splitInFields.push_back({type, name});
+        if(type.find("unique_ptr") != std::string::npos || type.find("vector") != std::string::npos)
+        {
+            splitInFields.push_back({{type, name}, 1});
+        }
+        else splitInFields.push_back({{type, name}, 0});
     }
 
     return splitInFields;
-}
+};
