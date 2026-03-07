@@ -11,13 +11,13 @@ int main(int argc, char *argv[])
     std::string outputDir = argv[1];
     std::vector<std::string> types =
         {
-            "Block : std::vector<Stmt*> stmts",
-            "Expr : Expr* expr",
-            "Print : Expr* expr",
-            "VarDecl : Token ident, Expr* init",
-            "If : Expr* condition, Stmt* trueStmt, Stmt* falseStmt",
-            "While : Expr* condition, Stmt* task",
-            "For : Stmt* initializer, Expr* condition, Expr* increment, Stmt* task",
+            "Block : std::vector<std::unique_ptr<Stmt>> stmts",
+            "Expr : std::unique_ptr<Expr> expr",
+            "Print : std::unique_ptr<Expr> expr",
+            "VarDecl : Token ident, std::unique_ptr<Expr> init",
+            "If : std::unique_ptr<Expr> condition, std::unique_ptr<Stmt> trueStmt, std::unique_ptr<Stmt> falseStmt",
+            "While : std::unique_ptr<Expr> condition, std::unique_ptr<Stmt> task",
+            "For : std::unique_ptr<Stmt> initializer, std::unique_ptr<Expr> condition, std::unique_ptr<Expr> increment, std::unique_ptr<Stmt> task",
             "Break : Token keyword",
             "Continue : Token keyword",
         };

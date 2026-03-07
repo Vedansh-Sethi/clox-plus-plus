@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include <memory>
 #include "token/token.hpp"
 
 class ExprVisitor;
@@ -39,9 +40,9 @@ class AssignExpr : public Expr {
 
 public: 
      Token ident;
-     Expr* value;
+     std::unique_ptr<Expr> value;
 
-     AssignExpr(Token ident,Expr* value) : ident(ident), value(value) {}
+     AssignExpr(Token ident,std::unique_ptr<Expr> value) : ident(ident), value(std::move(value)) {}
 
      void accept(ExprVisitor* visitor) override {
          visitor->visitAssignExpr(this);
@@ -51,11 +52,11 @@ public:
 class BinaryExpr : public Expr {
 
 public: 
-     Expr* left;
+     std::unique_ptr<Expr> left;
      Token op;
-     Expr* right;
+     std::unique_ptr<Expr> right;
 
-     BinaryExpr(Expr* left,Token op,Expr* right) : left(left), op(op), right(right) {}
+     BinaryExpr(std::unique_ptr<Expr> left,Token op,std::unique_ptr<Expr> right) : left(std::move(left)), op(op), right(std::move(right)) {}
 
      void accept(ExprVisitor* visitor) override {
          visitor->visitBinaryExpr(this);
@@ -65,9 +66,9 @@ public:
 class GroupingExpr : public Expr {
 
 public: 
-     Expr* expression;
+     std::unique_ptr<Expr> expression;
 
-     GroupingExpr(Expr* expression) : expression(expression) {}
+     GroupingExpr(std::unique_ptr<Expr> expression) : expression(std::move(expression)) {}
 
      void accept(ExprVisitor* visitor) override {
          visitor->visitGroupingExpr(this);
@@ -90,9 +91,9 @@ class UnaryExpr : public Expr {
 
 public: 
      Token op;
-     Expr* right;
+     std::unique_ptr<Expr> right;
 
-     UnaryExpr(Token op,Expr* right) : op(op), right(right) {}
+     UnaryExpr(Token op,std::unique_ptr<Expr> right) : op(op), right(std::move(right)) {}
 
      void accept(ExprVisitor* visitor) override {
          visitor->visitUnaryExpr(this);
@@ -102,9 +103,9 @@ public:
 class MultiExpr : public Expr {
 
 public: 
-     std::vector<Expr*> exprs;
+     std::vector<std::unique_ptr<Expr>> exprs;
 
-     MultiExpr(std::vector<Expr*> exprs) : exprs(exprs) {}
+     MultiExpr(std::vector<std::unique_ptr<Expr>> exprs) : exprs(std::move(exprs)) {}
 
      void accept(ExprVisitor* visitor) override {
          visitor->visitMultiExpr(this);
@@ -114,11 +115,11 @@ public:
 class TernaryExpr : public Expr {
 
 public: 
-     Expr* condition;
-     Expr* ifTrue;
-     Expr* ifFalse;
+     std::unique_ptr<Expr> condition;
+     std::unique_ptr<Expr> ifTrue;
+     std::unique_ptr<Expr> ifFalse;
 
-     TernaryExpr(Expr* condition,Expr* ifTrue,Expr* ifFalse = nullptr) : condition(condition), ifTrue(ifTrue), ifFalse(ifFalse) {}
+     TernaryExpr(std::unique_ptr<Expr> condition,std::unique_ptr<Expr> ifTrue,std::unique_ptr<Expr> ifFalse) : condition(std::move(condition)), ifTrue(std::move(ifTrue)), ifFalse(std::move(ifFalse)) {}
 
      void accept(ExprVisitor* visitor) override {
          visitor->visitTernaryExpr(this);
@@ -140,11 +141,11 @@ public:
 class LogicalExpr : public Expr {
 
 public: 
-     Expr* left;
+     std::unique_ptr<Expr> left;
      Token op;
-     Expr* right;
+     std::unique_ptr<Expr> right;
 
-     LogicalExpr(Expr* left,Token op,Expr* right) : left(left), op(op), right(right) {}
+     LogicalExpr(std::unique_ptr<Expr> left,Token op,std::unique_ptr<Expr> right) : left(std::move(left)), op(op), right(std::move(right)) {}
 
      void accept(ExprVisitor* visitor) override {
          visitor->visitLogicalExpr(this);

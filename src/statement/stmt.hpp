@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 #include <vector>
+#include <memory>
 #include "token/token.hpp"
 
 class StmtVisitor;
@@ -38,9 +39,9 @@ public:
 class BlockStmt : public Stmt {
 
 public: 
-     std::vector<Stmt*> stmts;
+     std::vector<std::unique_ptr<Stmt>> stmts;
 
-     BlockStmt(std::vector<Stmt*> stmts) : stmts(stmts) {}
+     BlockStmt(std::vector<std::unique_ptr<Stmt>> stmts) : stmts(std::move(stmts)) {}
 
      void accept(StmtVisitor* visitor) override {
          visitor->visitBlockStmt(this);
@@ -50,9 +51,9 @@ public:
 class ExprStmt : public Stmt {
 
 public: 
-     Expr* expr;
+     std::unique_ptr<Expr> expr;
 
-     ExprStmt(Expr* expr) : expr(expr) {}
+     ExprStmt(std::unique_ptr<Expr> expr) : expr(std::move(expr)) {}
 
      void accept(StmtVisitor* visitor) override {
          visitor->visitExprStmt(this);
@@ -62,9 +63,9 @@ public:
 class PrintStmt : public Stmt {
 
 public: 
-     Expr* expr;
+     std::unique_ptr<Expr> expr;
 
-     PrintStmt(Expr* expr) : expr(expr) {}
+     PrintStmt(std::unique_ptr<Expr> expr) : expr(std::move(expr)) {}
 
      void accept(StmtVisitor* visitor) override {
          visitor->visitPrintStmt(this);
@@ -75,9 +76,9 @@ class VarDeclStmt : public Stmt {
 
 public: 
      Token ident;
-     Expr* init;
+     std::unique_ptr<Expr> init;
 
-     VarDeclStmt(Token ident,Expr* init) : ident(ident), init(init) {}
+     VarDeclStmt(Token ident,std::unique_ptr<Expr> init) : ident(ident), init(std::move(init)) {}
 
      void accept(StmtVisitor* visitor) override {
          visitor->visitVarDeclStmt(this);
@@ -87,11 +88,11 @@ public:
 class IfStmt : public Stmt {
 
 public: 
-     Expr* condition;
-     Stmt* trueStmt;
-     Stmt* falseStmt;
+     std::unique_ptr<Expr> condition;
+     std::unique_ptr<Stmt> trueStmt;
+     std::unique_ptr<Stmt> falseStmt;
 
-     IfStmt(Expr* condition,Stmt* trueStmt,Stmt* falseStmt) : condition(condition), trueStmt(trueStmt), falseStmt(falseStmt) {}
+     IfStmt(std::unique_ptr<Expr> condition,std::unique_ptr<Stmt> trueStmt,std::unique_ptr<Stmt> falseStmt) : condition(std::move(condition)), trueStmt(std::move(trueStmt)), falseStmt(std::move(falseStmt)) {}
 
      void accept(StmtVisitor* visitor) override {
          visitor->visitIfStmt(this);
@@ -101,10 +102,10 @@ public:
 class WhileStmt : public Stmt {
 
 public: 
-     Expr* condition;
-     Stmt* task;
+     std::unique_ptr<Expr> condition;
+     std::unique_ptr<Stmt> task;
 
-     WhileStmt(Expr* condition,Stmt* task) : condition(condition), task(task) {}
+     WhileStmt(std::unique_ptr<Expr> condition,std::unique_ptr<Stmt> task) : condition(std::move(condition)), task(std::move(task)) {}
 
      void accept(StmtVisitor* visitor) override {
          visitor->visitWhileStmt(this);
@@ -114,12 +115,12 @@ public:
 class ForStmt : public Stmt {
 
 public: 
-     Stmt* initializer;
-     Expr* condition;
-     Expr* increment;
-     Stmt* task;
+     std::unique_ptr<Stmt> initializer;
+     std::unique_ptr<Expr> condition;
+     std::unique_ptr<Expr> increment;
+     std::unique_ptr<Stmt> task;
 
-     ForStmt(Stmt* initializer,Expr* condition,Expr* increment,Stmt* task) : initializer(initializer), condition(condition), increment(increment), task(task) {}
+     ForStmt(std::unique_ptr<Stmt> initializer,std::unique_ptr<Expr> condition,std::unique_ptr<Expr> increment,std::unique_ptr<Stmt> task) : initializer(std::move(initializer)), condition(std::move(condition)), increment(std::move(increment)), task(std::move(task)) {}
 
      void accept(StmtVisitor* visitor) override {
          visitor->visitForStmt(this);
