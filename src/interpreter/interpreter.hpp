@@ -44,7 +44,7 @@ public:
     Interpreter() : environment(new Environment())
     {
     }
-    void interpret(std::vector<Stmt *> stmts);
+    void interpret(std::vector<std::unique_ptr<Stmt>> stmts);
 
 private:
     // helper functions

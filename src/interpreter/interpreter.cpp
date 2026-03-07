@@ -337,13 +337,24 @@ std::string Interpreter::stringify(LiteralValue value)
     }
 }
 
-void Interpreter::interpret(std::vector<Stmt *> stmts)
+void Interpreter::visitCallExpr(CallExpr *expr)
+{
+    LiteralValue callee = evaluate((expr->callee).get());
+
+    std::vector<LiteralValue> arguments;
+    for (const std::unique_ptr<Expr>& argument : expr->arguments)
+    {
+        arguments.push_back(evaluate(argument.get()));
+    }
+}
+
+void Interpreter::interpret(std::vector<std::unique_ptr<Stmt>> stmts)
 {
     try
     {
-        for (Stmt *stmt : stmts)
+        for (const std::unique_ptr<Stmt>& stmt : stmts)
         {
-            execute(stmt);
+            execute(stmt.get());
         }
     }
     catch (ErrorHandler::RuntimeError error)
