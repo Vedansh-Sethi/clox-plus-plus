@@ -21,7 +21,7 @@ void run(std::string source)
 
     std::cout << "Starting Parsing..." << std::endl;
     Parser *parser = new Parser(tokens);
-    std::vector<std::unique_ptr<Stmt>> stmts = parser->parse();
+    const std::vector<std::unique_ptr<Stmt>>& stmts = parser->parse();
 
     if (ErrorHandler::hadError)
         return;
