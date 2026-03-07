@@ -104,15 +104,15 @@ std::unique_ptr<Expr> Parser::commaSeparatedExpressions()
     }
 
     std::vector<std::unique_ptr<Expr>> exprs;
-    exprs.push_back(expr);
+    exprs.push_back(std::move(expr));
 
     while (match<TokenType>(COMMA))
     {
         expr = ternary();
-        exprs.push_back(expr);
+        exprs.push_back(std::move(expr));
     }
 
-    return std::make_unique<MultiExpr>(exprs);
+    return std::make_unique<MultiExpr>(std::move(exprs));
 }
 
 std::unique_ptr<Expr> Parser::assignment()
@@ -143,7 +143,7 @@ std::unique_ptr<Expr> Parser::logical_or()
     {
         Token op = previous();
         std::unique_ptr<Expr> right = logical_or();
-        expr = std::make_unique<LogicalExpr>(expr, op, right);
+        expr = std::make_unique<LogicalExpr>(std::move(expr), op, std::move(right));
     }
 
     return expr;
@@ -157,7 +157,7 @@ std::unique_ptr<Expr> Parser::logical_and()
     {
         Token op = previous();
         std::unique_ptr<Expr> right = equality();
-        expr = std::make_unique<LogicalExpr>(expr, op, right);
+        expr = std::make_unique<LogicalExpr>(std::move(expr), op, std::move(right));
     }
 
     return expr;
@@ -167,23 +167,19 @@ std::unique_ptr<Expr> Parser::ternary()
 {
     std::unique_ptr<Expr> expr = assignment();
 
-    std::unique_ptr<Expr> condition = std::move(expr);
-
-    if (match<TokenType>(INTERROGATE))
-        expr = ternary();
-    else
-        return expr;
-
-    std::unique_ptr<Expr> ifTrue = std::move(expr);
-
-    if (match<TokenType>(COLON))
+    if(match(INTERROGATE))
     {
-        expr = ternary();
-        std::unique_ptr<Expr> ifFalse = std::move(expr);
-        expr = std::make_unique<TernaryExpr>(condition, ifTrue, ifFalse);
+        std::unique_ptr<Expr> condition = std::move(expr);
+        std::unique_ptr<Expr> ifTrue = ternary();
+
+        if(match(COLON))
+        {
+            std::unique_ptr<Expr> ifFalse = ternary();
+            return std::make_unique<TernaryExpr>(std::move(condition), std::move(ifTrue), std::move(ifFalse));
+        }
+
+        else return std::make_unique<TernaryExpr>(std::move(condition), std::move(ifTrue), nullptr);
     }
-    else
-        expr = std::make_unique<TernaryExpr>(condition, ifTrue, nullptr);
 
     return expr;
 }
@@ -196,7 +192,7 @@ std::unique_ptr<Expr> Parser::equality()
     {
         Token op = previous();
         std::unique_ptr<Expr> right = comparison();
-        expr = std::make_unique<BinaryExpr>(expr, op, right);
+        expr = std::make_unique<BinaryExpr>(std::move(expr), op, std::move(right));
     }
 
     return expr;
@@ -210,7 +206,7 @@ std::unique_ptr<Expr> Parser::comparison()
     {
         Token op = previous();
         std::unique_ptr<Expr> right = term();
-        expr = std::make_unique<BinaryExpr>(expr, op, right);
+        expr = std::make_unique<BinaryExpr>(std::move(expr), op, std::move(right));
     }
 
     return expr;
@@ -224,7 +220,7 @@ std::unique_ptr<Expr> Parser::term()
     {
         Token op = previous();
         std::unique_ptr<Expr> right = factor();
-        expr = std::make_unique<BinaryExpr>(expr, op, right);
+        expr = std::make_unique<BinaryExpr>(std::move(expr), op, std::move(right));
     }
 
     return expr;
@@ -238,7 +234,7 @@ std::unique_ptr<Expr> Parser::factor()
     {
         Token op = previous();
         std::unique_ptr<Expr> right = unary();
-        expr = std::make_unique<BinaryExpr>(expr, op, right);
+        expr = std::make_unique<BinaryExpr>(std::move(expr), op, std::move(right));
     }
 
     return expr;
@@ -250,47 +246,10 @@ std::unique_ptr<Expr> Parser::unary()
     {
         Token op = previous();
         std::unique_ptr<Expr> right = unary();
-        return std::make_unique<BinaryExpr>(op, right);
+        return std::make_unique<UnaryExpr>(op, std::move(right));
     }
 
-    return call();
-}
-
-std::unique_ptr<Expr> Parser::finishCall(const std::unique_ptr<Expr>& callee)
-{
-    std::vector<std::unique_ptr<Expr>> arguments;
-    if (!match(RIGHT_PAREN))
-    {
-        do
-        {
-            if (arguments.size() >= 255)
-            {
-                error(peek(), "Function can't have more than 255 arguments");
-            }
-            arguments.push_back(expression());
-        } while (match(COMMA));
-    }
-
-    Token paren = consume(RIGHT_PAREN, "Expected \")\" after arguments");
-
-    return std::make_unique<CallExpr>(callee, paren, arguments);
-}
-
-std::unique_ptr<Expr> Parser::call()
-{
-    std::unique_ptr<Expr> expr = primary();
-
-    while (true)
-    {
-        if (match(LEFT_PAREN))
-        {
-            expr = finishCall(expr);
-        }
-        else
-            break;
-    }
-
-    return expr;
+    return primary();
 }
 
 std::unique_ptr<Expr> Parser::primary()
@@ -319,7 +278,7 @@ std::unique_ptr<Expr> Parser::primary()
     {
         std::unique_ptr<Expr> expr = expression();
         consume(RIGHT_PAREN, "Expect \")\" after expression");
-        return std::make_unique<GroupingExpr>(expr);
+        return std::make_unique<GroupingExpr>(std::move(expr));
     }
     ErrorHandler::error(peek(), "Expected Expression");
     advance();
@@ -337,14 +296,22 @@ std::unique_ptr<Stmt> Parser::printStmt()
 {
     std::unique_ptr<Expr> value = expression();
     consume(SEMICOLON, "Expected \";\" at the end of line");
-    return std::make_unique<PrintStmt>(value);
+    return std::make_unique<PrintStmt>(std::move(value));
 }
 
 std::unique_ptr<Stmt> Parser::exprStmt()
 {
     std::unique_ptr<Expr> value = expression();
+    if(value == nullptr) 
+    {
+        std::cout << "The expression returned null expr" << std::endl;
+    }
+    else 
+    {
+        std::cout << "The expression did not return null expr" << std::endl;
+    }
     consume(SEMICOLON, "Expected \";\" after expression");
-    return std::make_unique<ExprStmt>(value);
+    return std::make_unique<ExprStmt>(std::move(value));
 }
 
 std::unique_ptr<Stmt> Parser::ifStmt()
@@ -358,7 +325,7 @@ std::unique_ptr<Stmt> Parser::ifStmt()
     {
         falseStmt = statement();
     }
-    return std::make_unique<IfStmt>(condition, trueStmt, falseStmt);
+    return std::make_unique<IfStmt>(std::move(condition), std::move(trueStmt), std::move(falseStmt));
 }
 
 std::unique_ptr<Stmt> Parser::continueStmt()
@@ -393,7 +360,7 @@ std::unique_ptr<Stmt> Parser::whileStmt()
     consume(RIGHT_PAREN, "Expected \")\" after expression");
     std::unique_ptr<Stmt> task = statement();
     loopCount--;
-    return std::make_unique<WhileStmt>(condition, task);
+    return std::make_unique<WhileStmt>(std::move(condition), std::move(task));
 }
 
 std::unique_ptr<Stmt> Parser::forStmt()
@@ -431,7 +398,7 @@ std::unique_ptr<Stmt> Parser::forStmt()
     std::unique_ptr<Stmt> task = statement();
 
     loopCount--;
-    return std::make_unique<ForStmt>(initializer, condition, increment, task);
+    return std::make_unique<ForStmt>(std::move(initializer), std::move(condition), std::move(increment), std::move(task));
 }
 
 std::unique_ptr<Stmt> Parser::statement()
@@ -464,7 +431,7 @@ std::unique_ptr<Stmt> Parser::varDeclStmt()
     }
 
     consume(SEMICOLON, "Expected \";\" after variable declaration");
-    return std::make_unique<VarDeclStmt>(ident, initializer);
+    return std::make_unique<VarDeclStmt>(ident, std::move(initializer));
 }
 
 std::unique_ptr<Stmt> Parser::declaration()
@@ -487,7 +454,7 @@ std::unique_ptr<Stmt> Parser::declaration()
 
 std::unique_ptr<Stmt> Parser::blockStmt()
 {
-    std::vector<std::unique_ptr<Stmt> > stmts;
+    std::vector<std::unique_ptr<Stmt>> stmts;
 
     while (!check(RIGHT_BRACE) && !isAtEnd())
     {
@@ -496,12 +463,12 @@ std::unique_ptr<Stmt> Parser::blockStmt()
 
     consume(RIGHT_BRACE, "Expected \"}\" after block");
 
-    return std::make_unique<BlockStmt>(stmts);
+    return std::make_unique<BlockStmt>(std::move(stmts));
 }
 
-std::vector<std::unique_ptr<Stmt> > Parser::parse()
+std::vector<std::unique_ptr<Stmt>> Parser::parse()
 {
-    std::vector<std::unique_ptr<Stmt> > statements;
+    std::vector<std::unique_ptr<Stmt>> statements;
     while (!isAtEnd())
     {
         statements.push_back(declaration());

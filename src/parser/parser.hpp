@@ -27,7 +27,6 @@ private:
     std::unique_ptr<Expr> term();
     std::unique_ptr<Expr> factor();
     std::unique_ptr<Expr> unary();
-    std::unique_ptr<Expr> call();
     std::unique_ptr<Expr> primary();
 
     // statement parsing functions
@@ -45,7 +44,7 @@ private:
 
 public:
     Parser(std::vector<Token> tokens) : tokens(tokens) {}
-    std::vector<std::unique_ptr<Stmt> > parse();
+    std::vector<std::unique_ptr<Stmt>> parse();
 
 private:
     // helper functions
@@ -59,7 +58,6 @@ private:
     inline Token consume(TokenType type, std::string message);
     inline Token peek(int ahead = 0) const;
     inline void addExpr(std::unique_ptr<Expr> expr);
-    std::unique_ptr<Expr> finishCall(const std::unique_ptr<Expr>& callee);
 
 private:
     class ParseError : public std::runtime_error

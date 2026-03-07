@@ -27,7 +27,6 @@ private:
     void visitVariableExpr(VariableExpr *expr) override;
     void visitAssignExpr(AssignExpr *expr) override;
     void visitLogicalExpr(LogicalExpr *expr) override;
-    void visitCallExpr(CallExpr *expr) override;
 
     // statement interpreting functions
     void visitPrintStmt(PrintStmt *stmt) override;
@@ -44,7 +43,7 @@ public:
     Interpreter() : environment(new Environment())
     {
     }
-    void interpret(std::vector<std::unique_ptr<Stmt>> stmts);
+    void interpret(const std::vector<std::unique_ptr<Stmt>>& stmts);
 
 private:
     // helper functions

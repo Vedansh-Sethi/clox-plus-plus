@@ -21,7 +21,7 @@ void Interpreter::executeBlock(std::vector<std::unique_ptr<Stmt>> stmts, Environ
     Environment *previous = this->environment;
     EnvironmentStorage storage{this, previous};
     this->environment = enclosed;
-    for (const std::unique_ptr<Stmt>& stmt : stmts)
+    for (const std::unique_ptr<Stmt> &stmt : stmts)
     {
         execute(stmt.get());
     }
@@ -227,17 +227,16 @@ void Interpreter::visitPrintStmt(PrintStmt *stmt)
 void Interpreter::visitVarDeclStmt(VarDeclStmt *stmt)
 {
     LiteralValue value = std::monostate();
-    if (stmt->init != nullptr)
+    if (stmt->init.get() != nullptr)
     {
-        value = evaluate((stmt->init).get());
+        value = evaluate(stmt->init.get());
     }
-
     environment->define(stmt->ident.lexeme, value);
 }
 
 void Interpreter::visitBlockStmt(BlockStmt *stmt)
 {
-    executeBlock(stmt->stmts, new Environment(environment));
+    executeBlock(std::move(stmt->stmts), new Environment(environment));
 }
 
 void Interpreter::visitIfStmt(IfStmt *stmt)
@@ -335,25 +334,20 @@ std::string Interpreter::stringify(LiteralValue value)
     {
         return std::get<std::string>(value);
     }
+
+    return "DEBUG";
 }
 
-void Interpreter::visitCallExpr(CallExpr *expr)
-{
-    LiteralValue callee = evaluate((expr->callee).get());
-
-    std::vector<LiteralValue> arguments;
-    for (const std::unique_ptr<Expr>& argument : expr->arguments)
-    {
-        arguments.push_back(evaluate(argument.get()));
-    }
-}
-
-void Interpreter::interpret(std::vector<std::unique_ptr<Stmt>> stmts)
+void Interpreter::interpret(const std::vector<std::unique_ptr<Stmt>> &stmts)
 {
     try
     {
-        for (const std::unique_ptr<Stmt>& stmt : stmts)
+        for (const std::unique_ptr<Stmt> &stmt : stmts)
         {
+            if (stmt.get() == nullptr)
+            {
+                std::cout << "THE ARGUMENTS IS NULL" << std::endl;
+            }
             execute(stmt.get());
         }
     }
