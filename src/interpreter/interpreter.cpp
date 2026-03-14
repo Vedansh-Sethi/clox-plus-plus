@@ -1,9 +1,18 @@
 #include <iostream>
+#include <cmath>
 #include "interpreter/interpreter.hpp"
-#include "token/token.hpp"
 #include "error.hpp"
+#include "callable/callable.hpp"
+#include "function/function.hpp"
 
-using LiteralValue = std::variant<std::monostate, std::string, double, bool>;
+using LiteralValue = std::variant<std::monostate, std::string, double, bool, std::shared_ptr<Callable>>;
+
+bool checkInt(double n)
+{
+    if(n - floor(n) > 1e-6) return false;
+    if(ceil(n) - n > 1e-6) return false;
+    return true;
+}
 
 LiteralValue Interpreter::evaluate(Expr *expr)
 {
@@ -16,9 +25,9 @@ void Interpreter::execute(Stmt *stmt)
     stmt->accept(this);
 }
 
-void Interpreter::executeBlock(std::vector<std::unique_ptr<Stmt>> stmts, Environment *enclosed)
+void Interpreter::executeBlock(const std::vector<std::unique_ptr<Stmt>>& stmts, std::shared_ptr<Environment> enclosed)
 {
-    Environment *previous = this->environment;
+    std::shared_ptr<Environment> previous = this->environment;
     EnvironmentStorage storage{this, previous};
     this->environment = enclosed;
     for (const std::unique_ptr<Stmt> &stmt : stmts)
@@ -34,9 +43,7 @@ bool Interpreter::isTruthy(LiteralValue value)
     if (std::holds_alternative<bool>(value))
         return std::get<bool>(value);
     if (std::holds_alternative<double>(value))
-    {
         return std::get<double>(value);
-    }
     return true;
 }
 
@@ -61,6 +68,19 @@ bool Interpreter::checkOperandValidity(Token opToken, LiteralValue right, Litera
     {
         throw ErrorHandler::RuntimeError(opToken, "Division by zero error");
         return false;
+    }
+    if (opToken.type == MODULUS)
+    {
+        if(!checkInt(std::get<double>(right)) || !checkInt(std::get<double>(left)))
+        {
+            throw ErrorHandler::RuntimeError(opToken, "Operands must be Integers");
+            return false;
+        }
+        if(std::get<double>(right) == 0) 
+        {
+            throw ErrorHandler::RuntimeError(opToken, "Remainder with respect to zero error");
+            return false;
+        }
     }
     return true;
 }
@@ -115,6 +135,10 @@ void Interpreter::visitBinaryExpr(BinaryExpr *expr)
     case SLASH:
         if (checkOperandValidity(expr->op, right, left))
             result = std::get<double>(left) / std::get<double>(right);
+        break;
+    case MODULUS:
+        if(checkOperandValidity(expr->op, right, left))
+            result = (double)((int)std::get<double>(left) % (int)std::get<double>(right));
         break;
     case STAR:
         if (checkOperandValidity(expr->op, right, left))
@@ -213,6 +237,55 @@ void Interpreter::visitLogicalExpr(LogicalExpr *expr)
     return;
 }
 
+void Interpreter::visitReturnStmt(ReturnStmt *stmt)
+{
+    LiteralValue value = std::monostate();
+    if(stmt->value.get() == nullptr)
+    {
+        throw ReturnInstruction(value);
+        return;
+    }
+    value = evaluate(stmt->value.get());
+    throw ReturnInstruction(value);
+}
+
+void Interpreter::visitCallExpr(CallExpr *expr)
+{
+    LiteralValue callee = evaluate((expr->callee).get());
+
+    std::vector<LiteralValue> arguments;
+    for (const std::unique_ptr<Expr> &argument : expr->arguments)
+    {
+        arguments.push_back(evaluate(argument.get()));
+    }
+
+    if (!std::holds_alternative<std::shared_ptr<Callable>>(callee))
+    {
+        throw ErrorHandler::RuntimeError(expr->paren, "Can only call functions and classes");
+    }
+
+    std::shared_ptr<Callable> function = std::get<std::shared_ptr<Callable>>(callee);
+
+    if (arguments.size() != function->arity())
+    {
+        throw ErrorHandler::RuntimeError(expr->paren, "Expected " + std::to_string(function->arity()) + " arguments but got " + std::to_string(arguments.size()) + " arguments");
+    }
+    try 
+    {
+        result = function->call(this, arguments);
+    }
+    catch(ReturnInstruction returnInstruction)
+    {
+        result = returnInstruction.value;
+    }
+}
+
+void Interpreter::visitFunctionDeclStmt(FunctionDeclStmt *stmt)
+{
+    std::shared_ptr<Function> func = std::make_shared<Function>(stmt, this->environment);
+    this->environment->define(stmt->name.lexeme, func);
+}
+
 void Interpreter::visitExprStmt(ExprStmt *stmt)
 {
     evaluate((stmt->expr).get());
@@ -236,7 +309,7 @@ void Interpreter::visitVarDeclStmt(VarDeclStmt *stmt)
 
 void Interpreter::visitBlockStmt(BlockStmt *stmt)
 {
-    executeBlock(std::move(stmt->stmts), new Environment(environment));
+    executeBlock(std::move(stmt->stmts), std::make_shared<Environment>(environment));
 }
 
 void Interpreter::visitIfStmt(IfStmt *stmt)
@@ -255,11 +328,11 @@ void Interpreter::visitWhileStmt(WhileStmt *stmt)
 {
     try
     {
-        while (isTruthy(evaluate((stmt->condition).get())))
+        while (isTruthy(evaluate(stmt->condition.get())))
         {
             try
             {
-                execute((stmt->task).get());
+                execute(stmt->task.get());
             }
             catch (ContinueInstruction &continueInstruction)
             {
@@ -273,9 +346,9 @@ void Interpreter::visitWhileStmt(WhileStmt *stmt)
 
 void Interpreter::visitForStmt(ForStmt *stmt)
 {
-    Environment *previous = this->environment;
+    std::shared_ptr<Environment> previous = this->environment;
     EnvironmentStorage storage{this, previous};
-    Environment *enclosed = new Environment(this->environment);
+    std::shared_ptr<Environment> enclosed = std::make_shared<Environment>(this->environment);
     this->environment = enclosed;
     if (stmt->initializer != nullptr)
     {
@@ -321,6 +394,7 @@ std::string Interpreter::stringify(LiteralValue value)
     }
     if (std::holds_alternative<double>(value))
     {
+        if(checkInt(std::get<double>(value))) return std::to_string((int)std::get<double>(value));
         return std::to_string(std::get<double>(value));
     }
 
@@ -355,4 +429,10 @@ void Interpreter::interpret(const std::vector<std::unique_ptr<Stmt>> &stmts)
     {
         ErrorHandler::runtimeError(error);
     }
+}
+
+Interpreter::Interpreter() : environment(globals)
+{
+    std::shared_ptr<Callable> clockCallable = std::make_shared<ClockCallable>();
+    globals->define("clock", clockCallable);
 }
