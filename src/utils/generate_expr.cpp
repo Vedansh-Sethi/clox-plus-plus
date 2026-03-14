@@ -23,6 +23,7 @@ int main(int argc, char *argv[])
             "Ternary : std::unique_ptr<Expr> condition, std::unique_ptr<Expr> ifTrue, std::unique_ptr<Expr> ifFalse",
             "Variable : Token ident",
             "Logical : std::unique_ptr<Expr> left, Token op, std::unique_ptr<Expr> right",
+            "Call : std::unique_ptr<Expr> callee, Token paren, std::vector<std::unique_ptr<Expr>> arguments",
         };
     defineAST(outputDir, "expr", "Expr", types);
 }

@@ -14,6 +14,7 @@ class MultiExpr;
 class TernaryExpr;
 class VariableExpr;
 class LogicalExpr;
+class CallExpr;
 
 
 class Expr {
@@ -33,6 +34,7 @@ public:
      virtual void visitTernaryExpr(TernaryExpr* Expr) = 0;
      virtual void visitVariableExpr(VariableExpr* Expr) = 0;
      virtual void visitLogicalExpr(LogicalExpr* Expr) = 0;
+     virtual void visitCallExpr(CallExpr* Expr) = 0;
 
 };
 
@@ -149,6 +151,20 @@ public:
 
      void accept(ExprVisitor* visitor) override {
          visitor->visitLogicalExpr(this);
+     }
+ };
+
+class CallExpr : public Expr {
+
+public: 
+     std::unique_ptr<Expr> callee;
+     Token paren;
+     std::vector<std::unique_ptr<Expr>> arguments;
+
+     CallExpr(std::unique_ptr<Expr> callee,Token paren,std::vector<std::unique_ptr<Expr>> arguments) : callee(std::move(callee)), paren(paren), arguments(std::move(arguments)) {}
+
+     void accept(ExprVisitor* visitor) override {
+         visitor->visitCallExpr(this);
      }
  };
 
