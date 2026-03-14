@@ -27,10 +27,12 @@ private:
     std::unique_ptr<Expr> term();
     std::unique_ptr<Expr> factor();
     std::unique_ptr<Expr> unary();
+    std::unique_ptr<Expr> call();
     std::unique_ptr<Expr> primary();
 
     // statement parsing functions
     std::unique_ptr<Stmt> declaration();
+    std::unique_ptr<Stmt> funDeclStmt(std::string kind);
     std::unique_ptr<Stmt> varDeclStmt();
     std::unique_ptr<Stmt> statement();
     std::unique_ptr<Stmt> printStmt();
@@ -41,10 +43,12 @@ private:
     std::unique_ptr<Stmt> forStmt();
     std::unique_ptr<Stmt> breakStmt();
     std::unique_ptr<Stmt> continueStmt();
+    std::unique_ptr<Stmt> returnStmt();
 
 public:
     Parser(std::vector<Token> tokens) : tokens(tokens) {}
     std::vector<std::unique_ptr<Stmt>> parse();
+    std::vector<std::unique_ptr<Stmt>> block();
 
 private:
     // helper functions
@@ -58,6 +62,7 @@ private:
     inline Token consume(TokenType type, std::string message);
     inline Token peek(int ahead = 0) const;
     inline void addExpr(std::unique_ptr<Expr> expr);
+    std::unique_ptr<Expr> finishCall(std::unique_ptr<Expr> expr);
 
 private:
     class ParseError : public std::runtime_error

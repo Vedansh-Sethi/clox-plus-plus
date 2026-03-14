@@ -167,18 +167,19 @@ std::unique_ptr<Expr> Parser::ternary()
 {
     std::unique_ptr<Expr> expr = assignment();
 
-    if(match(INTERROGATE))
+    if (match(INTERROGATE))
     {
         std::unique_ptr<Expr> condition = std::move(expr);
         std::unique_ptr<Expr> ifTrue = ternary();
 
-        if(match(COLON))
+        if (match(COLON))
         {
             std::unique_ptr<Expr> ifFalse = ternary();
             return std::make_unique<TernaryExpr>(std::move(condition), std::move(ifTrue), std::move(ifFalse));
         }
 
-        else return std::make_unique<TernaryExpr>(std::move(condition), std::move(ifTrue), nullptr);
+        else
+            return std::make_unique<TernaryExpr>(std::move(condition), std::move(ifTrue), nullptr);
     }
 
     return expr;
@@ -230,7 +231,7 @@ std::unique_ptr<Expr> Parser::factor()
 {
     std::unique_ptr<Expr> expr = unary();
 
-    while (match<TokenType, TokenType>(SLASH, STAR))
+    while (match<TokenType, TokenType>(SLASH, STAR, MODULUS))
     {
         Token op = previous();
         std::unique_ptr<Expr> right = unary();
@@ -249,7 +250,55 @@ std::unique_ptr<Expr> Parser::unary()
         return std::make_unique<UnaryExpr>(op, std::move(right));
     }
 
-    return primary();
+    return call();
+}
+
+std::unique_ptr<Stmt> Parser::returnStmt()
+{
+    Token keyword = previous();
+    std::unique_ptr<Expr> value = nullptr;
+    if(!check(SEMICOLON))
+    {
+        value = expression();
+    }
+
+    consume(SEMICOLON, "Expected \";\" after return statement");
+    return std::make_unique<ReturnStmt>(keyword, std::move(value));
+}
+
+std::unique_ptr<Expr> Parser::finishCall(std::unique_ptr<Expr> callee)
+{
+    std::vector<std::unique_ptr<Expr>> arguments;
+    if (!check(RIGHT_PAREN))
+    {
+        do
+        {
+            arguments.push_back(ternary());
+        } while (match(COMMA));
+    }
+
+    Token paren = consume(RIGHT_PAREN, "Expected\")\" after arguments list");
+
+    return std::make_unique<CallExpr>(std::move(callee), paren, std::move(arguments));
+}
+
+std::unique_ptr<Expr> Parser::call()
+{
+    std::unique_ptr<Expr> expr = primary();
+
+    while (1)
+    {
+        if (match(LEFT_PAREN))
+        {
+            expr = finishCall(std::move(expr));
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    return expr;
 }
 
 std::unique_ptr<Expr> Parser::primary()
@@ -302,14 +351,6 @@ std::unique_ptr<Stmt> Parser::printStmt()
 std::unique_ptr<Stmt> Parser::exprStmt()
 {
     std::unique_ptr<Expr> value = expression();
-    if(value == nullptr) 
-    {
-        std::cout << "The expression returned null expr" << std::endl;
-    }
-    else 
-    {
-        std::cout << "The expression did not return null expr" << std::endl;
-    }
     consume(SEMICOLON, "Expected \";\" after expression");
     return std::make_unique<ExprStmt>(std::move(value));
 }
@@ -403,6 +444,8 @@ std::unique_ptr<Stmt> Parser::forStmt()
 
 std::unique_ptr<Stmt> Parser::statement()
 {
+    if(match(RETURN))
+        return returnStmt();
     if (match(PRINT))
         return printStmt();
     if (match<TokenType>(LEFT_BRACE))
@@ -434,10 +477,34 @@ std::unique_ptr<Stmt> Parser::varDeclStmt()
     return std::make_unique<VarDeclStmt>(ident, std::move(initializer));
 }
 
+std::unique_ptr<Stmt> Parser::funDeclStmt(std::string kind)
+{
+    Token name = consume(IDENTIFIER, "Expected " + kind + " name");
+    consume(LEFT_PAREN, "Expect \"(\" after " + kind + " name");
+    std::vector<Token> params;
+    if (!check(RIGHT_PAREN))
+    {
+        do
+        {
+            params.push_back(consume(IDENTIFIER, "Expected parameter name"));
+        } while (match(COMMA));
+    }
+    consume(RIGHT_PAREN, "Expected \")\" after function parameters");
+
+    consume(LEFT_BRACE, "Expect \"{\" before function body");
+
+    std::vector<std::unique_ptr<Stmt>> body = block();
+    return std::make_unique<FunctionDeclStmt>(name, std::move(params), std::move(body));
+}
+
 std::unique_ptr<Stmt> Parser::declaration()
 {
     try
     {
+        if (match(FUN))
+        {
+            return funDeclStmt("function");
+        }
         if (match(VAR))
         {
             return varDeclStmt();
@@ -454,16 +521,19 @@ std::unique_ptr<Stmt> Parser::declaration()
 
 std::unique_ptr<Stmt> Parser::blockStmt()
 {
-    std::vector<std::unique_ptr<Stmt>> stmts;
+    std::vector<std::unique_ptr<Stmt>> stmts = block();
+    return std::make_unique<BlockStmt>(std::move(stmts));
+}
 
+std::vector<std::unique_ptr<Stmt>> Parser::block()
+{
+    std::vector<std::unique_ptr<Stmt>> stmts;
     while (!check(RIGHT_BRACE) && !isAtEnd())
     {
         stmts.push_back(declaration());
     }
-
     consume(RIGHT_BRACE, "Expected \"}\" after block");
-
-    return std::make_unique<BlockStmt>(std::move(stmts));
+    return stmts;
 }
 
 std::vector<std::unique_ptr<Stmt>> Parser::parse()
