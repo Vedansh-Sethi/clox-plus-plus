@@ -1,5 +1,9 @@
 #include <variant>
+#include <memory>
 #include "token/token.hpp"
+#include "callable/callable.hpp"
+#include <string>
+class Callable;
 
 std::string tokenTypeToString(TokenType type)
 {
@@ -14,6 +18,8 @@ std::string tokenTypeToString(TokenType type)
         return "LEFT_BRACE";
     case RIGHT_BRACE:
         return "RIGHT_BRACE";
+    case MODULUS:
+        return "MODULUS";
     case COMMA:
         return "COMMA";
     case DOT:
@@ -104,6 +110,17 @@ std::string tokenTypeToString(TokenType type)
     }
 }
 
+
+std::string LiteralPrinter::operator()(const std::shared_ptr<Callable>& c) const
+{
+    return c->toString();
+}
+
+std::string literalToString(const LiteralValue& val)
+{
+    return std::visit(LiteralPrinter{}, val);
+}
+
 std::string Token::literalToString() const
 {
     if (std::holds_alternative<std::monostate>(literal))
@@ -114,6 +131,10 @@ std::string Token::literalToString() const
         return std::to_string(std::get<double>(literal));
     if (std::holds_alternative<bool>(literal))
         return std::get<bool>(literal) ? "true" : "false";
+    if(std::holds_alternative<std::shared_ptr<Callable>>(literal))
+    {
+        return std::get<std::shared_ptr<Callable>>(literal)->toString();
+    }
     return "";
 }
 

@@ -13,6 +13,7 @@ enum TokenType
     MINUS,
     PLUS,
     COLON,
+    MODULUS,
     INTERROGATE,
     SEMICOLON,
     SLASH,

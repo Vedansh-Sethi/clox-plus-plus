@@ -1,23 +1,24 @@
 #pragma once
 #include <iostream>
 #include <variant>
+#include <memory>
 #include "token/token_type.hpp"
 
+class Callable;
+
 // std::monostate is equivalent to null
-using LiteralValue = std::variant<std::monostate, std::string, double, bool>;
+using LiteralValue = std::variant<std::monostate, std::string, double, bool, std::shared_ptr<Callable>>;
 
 struct LiteralPrinter
 {
-    std::string operator()(std::monostate) {return "nil";}
-    std::string operator()(std::string s){return s;}
-    std::string operator()(double d){return std::to_string(d);}
-    std::string operator()(bool b){return b ? "true" : "false";}
+    std::string operator()(std::monostate) const { return "nil"; }
+    std::string operator()(const std::string &s) const { return s; }
+    std::string operator()(double d) const { return std::to_string(d); }
+    std::string operator()(bool b) const { return b ? "true" : "false"; }
+    std::string operator()(const std::shared_ptr<Callable> &c) const;
 };
 
-inline std::string literalToString(LiteralValue val)
-{
-    return std::visit(LiteralPrinter{}, val);
-}
+std::string literalToString(const LiteralValue& val);
 
 class Token
 {
