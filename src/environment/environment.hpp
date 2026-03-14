@@ -9,12 +9,12 @@ private:
     std::unordered_map<std::string, LiteralValue> values;
 
 public:
-    Environment* enclosing;
+    std::shared_ptr<Environment> enclosing;
     void define(std::string ident, LiteralValue value);
     void assign(Token ident, LiteralValue value);
     LiteralValue get(Token ident);
     Environment() : enclosing(nullptr)
     {}
-    Environment(Environment* enclosing) : enclosing(enclosing)
+    Environment(std::shared_ptr<Environment> enclosing) : enclosing(enclosing)
     {}
 };
