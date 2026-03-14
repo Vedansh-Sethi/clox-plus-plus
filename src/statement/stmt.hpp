@@ -8,12 +8,14 @@ class StmtVisitor;
 class BlockStmt;
 class ExprStmt;
 class PrintStmt;
+class ReturnStmt;
 class VarDeclStmt;
 class IfStmt;
 class WhileStmt;
 class ForStmt;
 class BreakStmt;
 class ContinueStmt;
+class FunctionDeclStmt;
 
 
 class Stmt {
@@ -27,12 +29,14 @@ public:
      virtual void visitBlockStmt(BlockStmt* Stmt) = 0;
      virtual void visitExprStmt(ExprStmt* Stmt) = 0;
      virtual void visitPrintStmt(PrintStmt* Stmt) = 0;
+     virtual void visitReturnStmt(ReturnStmt* Stmt) = 0;
      virtual void visitVarDeclStmt(VarDeclStmt* Stmt) = 0;
      virtual void visitIfStmt(IfStmt* Stmt) = 0;
      virtual void visitWhileStmt(WhileStmt* Stmt) = 0;
      virtual void visitForStmt(ForStmt* Stmt) = 0;
      virtual void visitBreakStmt(BreakStmt* Stmt) = 0;
      virtual void visitContinueStmt(ContinueStmt* Stmt) = 0;
+     virtual void visitFunctionDeclStmt(FunctionDeclStmt* Stmt) = 0;
 
 };
 
@@ -69,6 +73,19 @@ public:
 
      void accept(StmtVisitor* visitor) override {
          visitor->visitPrintStmt(this);
+     }
+ };
+
+class ReturnStmt : public Stmt {
+
+public: 
+     Token keyword;
+     std::unique_ptr<Expr> value;
+
+     ReturnStmt(Token keyword,std::unique_ptr<Expr> value) : keyword(keyword), value(std::move(value)) {}
+
+     void accept(StmtVisitor* visitor) override {
+         visitor->visitReturnStmt(this);
      }
  };
 
@@ -148,6 +165,20 @@ public:
 
      void accept(StmtVisitor* visitor) override {
          visitor->visitContinueStmt(this);
+     }
+ };
+
+class FunctionDeclStmt : public Stmt {
+
+public: 
+     Token name;
+     std::vector<Token> params;
+     std::vector<std::unique_ptr<Stmt>> body;
+
+     FunctionDeclStmt(Token name,std::vector<Token> params,std::vector<std::unique_ptr<Stmt>> body) : name(name), params(std::move(params)), body(std::move(body)) {}
+
+     void accept(StmtVisitor* visitor) override {
+         visitor->visitFunctionDeclStmt(this);
      }
  };
 

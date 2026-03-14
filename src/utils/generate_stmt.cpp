@@ -14,12 +14,14 @@ int main(int argc, char *argv[])
             "Block : std::vector<std::unique_ptr<Stmt>> stmts",
             "Expr : std::unique_ptr<Expr> expr",
             "Print : std::unique_ptr<Expr> expr",
+            "Return : Token keyword, std::unique_ptr<Expr> value",
             "VarDecl : Token ident, std::unique_ptr<Expr> init",
             "If : std::unique_ptr<Expr> condition, std::unique_ptr<Stmt> trueStmt, std::unique_ptr<Stmt> falseStmt",
             "While : std::unique_ptr<Expr> condition, std::unique_ptr<Stmt> task",
             "For : std::unique_ptr<Stmt> initializer, std::unique_ptr<Expr> condition, std::unique_ptr<Expr> increment, std::unique_ptr<Stmt> task",
             "Break : Token keyword",
             "Continue : Token keyword",
+            "FunctionDecl : Token name, std::vector<Token> params, std::vector<std::unique_ptr<Stmt>> body",
         };
     defineAST(outputDir, "stmt", "Stmt", types);
 }
