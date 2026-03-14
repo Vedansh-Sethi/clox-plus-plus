@@ -6,6 +6,8 @@ set(SOURCES
     parser/parser.cpp
     interpreter/interpreter.cpp
     environment/environment.cpp
+    function/native_function/nativeFunction.cpp
+    function/function.cpp
 )
 
 
