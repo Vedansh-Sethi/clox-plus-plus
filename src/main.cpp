@@ -7,7 +7,6 @@
 #include "interpreter/interpreter.hpp"
 #include "token/token.hpp"
 #include "error.hpp"
-#include "utils/ast_printer/ast_printer.hpp"
 #include "parser/parser.hpp"
 
 void run(std::string source)
@@ -17,7 +16,6 @@ void run(std::string source)
     std::cout << "Starting Tokenizing..." << std::endl;
     Scanner *scanner = new Scanner(source);
     std::vector<Token> tokens = scanner->scanTokens();
-    scanner->printTokens(tokens);
 
     std::cout << "Starting Parsing..." << std::endl;
     Parser *parser = new Parser(tokens);
