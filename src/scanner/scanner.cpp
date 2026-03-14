@@ -5,6 +5,8 @@
 #include "scanner/scanner.hpp"
 #include "error.hpp"
 
+class Callable;
+
 static std::map<std::string, TokenType> keywords =
     {
         {"and", AND},
@@ -179,6 +181,9 @@ void Scanner::scanToken()
         break;
     case ';':
         addToken(SEMICOLON);
+        break;
+    case '%':
+        addToken(MODULUS);
         break;
     case '*':
         addToken(STAR);
