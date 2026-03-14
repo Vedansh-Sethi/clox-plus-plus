@@ -46,14 +46,20 @@ This is the C++ implementation of the JLox compiler made in "Crafting Interprete
 - `comparison` -> `term` ((">" | ">=" | "<" | "<=") `term`)*;
 - `term` -> `factor` (("+" | "-") `factor`) *;
 - `factor` ->  `unary` (( "*" | "/") `unary`) *;
-- `unary` -> (( "!" | "-" ) `unary`) | `primary`;
+- `unary` -> (( "!" | "-" ) `unary`) | `call`;
+- `call` -> `primary` ( "(" `arguments`? ")" )* ;
+- `arguments` -> `expression` ( "," `expression`)* ;
 - `primary` -> NUMBER | STRING | "true" | "false" | "nil" | "(" `expression` ")" | IDENTIFIER;
 
 ### Basic Rules for statements -
 - `program` -> `declaration`* EOF;
-- `declaration` -> `varDeclStmt` | `stmt`;
+- `declaration` -> `funDeclStmt` | `varDeclStmt` | `stmt`;
+- `funDeclStmt`-> "fun" `function`;
+- `function` -> IDENTIFIER "(" `parameters`? ")" `block` ;
+- `parameters` -> IDENTIFIER ( "," IDENTIFIER )* ;
 - `varDeclStmt` -> "var" IDENTIFIER ("="  `expression`)? ";";
-- `stmt` -> `exprStmt` | `printStmt` | `block` | `ifStmt` | `whileStmt` | `forStmt` | `break` | `continue`;
+- `stmt` -> `exprStmt` | `printStmt` | `block` | `ifStmt` | `whileStmt` | `forStmt` | `break` | `continue` | `return`;
+- `return` -> "return" `expression`? ";" ;
 - `block` -> "{" `declaration`* "}"
 - `exprStmt` -> `expression` ";" ;
 - `printStmt` -> "print" `expression` ";";
