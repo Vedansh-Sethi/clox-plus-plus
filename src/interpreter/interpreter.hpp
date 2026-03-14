@@ -3,8 +3,9 @@
 #include "expression/expr.hpp"
 #include "statement/stmt.hpp"
 #include "environment/environment.hpp"
-
-using LiteralValue = std::variant<std::monostate, std::string, double, bool>;
+#include "callable/callable.hpp"
+#include "token/token.hpp"
+#include "function/native_function/nativeFunction.hpp"
 
 class Interpreter : public ExprVisitor, public StmtVisitor
 {
@@ -12,9 +13,7 @@ private:
     // private variables
     LiteralValue result;
     LiteralValue evaluate(Expr *expr);
-    Environment *environment;
     void execute(Stmt *stmt);
-    void executeBlock(std::vector<std::unique_ptr<Stmt>> stmts, Environment *enclosed);
 
 private:
     // expression interpreting functions
@@ -27,6 +26,7 @@ private:
     void visitVariableExpr(VariableExpr *expr) override;
     void visitAssignExpr(AssignExpr *expr) override;
     void visitLogicalExpr(LogicalExpr *expr) override;
+    void visitCallExpr(CallExpr *expr) override;
 
     // statement interpreting functions
     void visitPrintStmt(PrintStmt *stmt) override;
@@ -38,12 +38,15 @@ private:
     void visitBreakStmt(BreakStmt *stmt) override;
     void visitContinueStmt(ContinueStmt *stmt) override;
     void visitForStmt(ForStmt *stmt) override;
+    void visitFunctionDeclStmt(FunctionDeclStmt *stmt) override;
+    void visitReturnStmt(ReturnStmt *stmt) override;
 
 public:
-    Interpreter() : environment(new Environment())
-    {
-    }
-    void interpret(const std::vector<std::unique_ptr<Stmt>>& stmts);
+    std::shared_ptr<Environment> globals = std::make_shared<Environment>();
+    std::shared_ptr<Environment> environment;
+    Interpreter();
+    void interpret(const std::vector<std::unique_ptr<Stmt>> &stmts);
+    void executeBlock(const std::vector<std::unique_ptr<Stmt>> &stmts, std::shared_ptr<Environment> enclosed);
 
 private:
     // helper functions
@@ -58,10 +61,18 @@ private:
     class ContinueInstruction
     {
     };
+    class ReturnInstruction
+    {
+    public:
+        LiteralValue value;
+        ReturnInstruction(LiteralValue value = std::monostate()) : value(value)
+        {
+        }
+    };
     struct EnvironmentStorage
     {
         Interpreter *interpreter;
-        Environment *previous;
+        std::shared_ptr<Environment> previous;
         ~EnvironmentStorage() { interpreter->environment = previous; }
     };
 };
