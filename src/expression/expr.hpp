@@ -15,7 +15,9 @@ class TernaryExpr;
 class VariableExpr;
 class LogicalExpr;
 class CallExpr;
+class LambdaExpr;
 
+class Stmt;
 
 class Expr {
 public: 
@@ -35,6 +37,7 @@ public:
      virtual void visitVariableExpr(VariableExpr* Expr) = 0;
      virtual void visitLogicalExpr(LogicalExpr* Expr) = 0;
      virtual void visitCallExpr(CallExpr* Expr) = 0;
+     virtual void visitLambdaExpr(LambdaExpr* Expr) = 0;
 
 };
 
@@ -165,6 +168,20 @@ public:
 
      void accept(ExprVisitor* visitor) override {
          visitor->visitCallExpr(this);
+     }
+ };
+
+class LambdaExpr : public Expr {
+
+public: 
+     Token fun;
+     std::vector<Token> params;
+     std::vector<std::unique_ptr<Stmt>> body;
+
+     LambdaExpr(Token fun,std::vector<Token> params,std::vector<std::unique_ptr<Stmt>> body) : fun(fun), params(std::move(params)), body(std::move(body)) {}
+
+     void accept(ExprVisitor* visitor) override {
+         visitor->visitLambdaExpr(this);
      }
  };
 
