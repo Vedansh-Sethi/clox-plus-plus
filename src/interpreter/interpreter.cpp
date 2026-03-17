@@ -204,14 +204,30 @@ void Interpreter::visitTernaryExpr(TernaryExpr *expr)
 
 void Interpreter::visitVariableExpr(VariableExpr *expr)
 {
-    result = environment->get(expr->ident);
+    result = lookUpVariable(expr->ident, expr);
+}
+
+LiteralValue Interpreter::lookUpVariable(Token ident, Expr *expr)
+{
+    if (locals.count(expr))
+    {
+        int distance = locals[expr];
+        return environment->getAt(distance, ident.lexeme);
+    }
+    else
+        return globals->get(ident);
 }
 
 void Interpreter::visitAssignExpr(AssignExpr *expr)
 {
     LiteralValue value = evaluate((expr->value).get());
-    result = value;
-    environment->assign(expr->ident, value);
+    if (locals.count(expr))
+    {
+        int distance = locals[expr];
+        environment->assignAt(distance, expr->ident, value);
+    }
+    else
+        globals->assign(expr->ident, value);
 }
 
 void Interpreter::visitLogicalExpr(LogicalExpr *expr)
@@ -419,7 +435,7 @@ std::string Interpreter::stringify(LiteralValue value)
         return std::get<std::string>(value);
     }
 
-    if(std::holds_alternative<std::shared_ptr<Callable>>(value))
+    if (std::holds_alternative<std::shared_ptr<Callable>>(value))
     {
         return std::get<std::shared_ptr<Callable>>(value)->toString();
     }
@@ -444,6 +460,11 @@ void Interpreter::interpret(const std::vector<std::unique_ptr<Stmt>> &stmts)
     {
         ErrorHandler::runtimeError(error);
     }
+}
+
+void Interpreter::resolve(Expr *expr, int depth)
+{
+    locals[expr] = depth;
 }
 
 Interpreter::Interpreter() : environment(globals)

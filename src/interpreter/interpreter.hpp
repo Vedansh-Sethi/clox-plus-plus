@@ -7,12 +7,15 @@
 #include "token/token.hpp"
 #include "function/native_function/nativeFunction.hpp"
 
+using Map = std::unordered_map<Expr*, int>;
+
 class Interpreter : public ExprVisitor, public StmtVisitor
 {
 private:
     // private variables
     LiteralValue result;
     LiteralValue evaluate(Expr *expr);
+    Map locals;
     void execute(Stmt *stmt);
 
 private:
@@ -48,10 +51,12 @@ public:
     Interpreter();
     void interpret(const std::vector<std::unique_ptr<Stmt>> &stmts);
     void executeBlock(const std::vector<std::unique_ptr<Stmt>> &stmts, std::shared_ptr<Environment> enclosed);
+    void resolve(Expr* expr, int depth);
 
 private:
     // helper functions
     bool isTruthy(LiteralValue value);
+    LiteralValue lookUpVariable(Token ident, Expr* expr);
     bool checkOperandValidity(Token opToken, LiteralValue right, LiteralValue left);
     bool checkOperandValidity(Token opToken, LiteralValue operand);
     bool isEqual(LiteralValue left, LiteralValue right);
