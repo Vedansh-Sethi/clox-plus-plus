@@ -36,7 +36,7 @@ This is the C++ implementation of the JLox compiler made in "Crafting Interprete
 
 ### Updated Grammar with Precedence -
 
-- `expression` -> `Comma Separated Expressions`
+- `expression` -> `Comma Separated Expressions`;
 - `Comma Separated Expressions` -> `ternary` (("?") `ternary`)*;
 -  `ternary` -> `assignment` ( ("?") `ternary` (":") `ternary` );
 -  `assignment` -> IDENTIFIER "="  `assignment` | `logic_or`;
@@ -49,7 +49,8 @@ This is the C++ implementation of the JLox compiler made in "Crafting Interprete
 - `unary` -> (( "!" | "-" ) `unary`) | `call`;
 - `call` -> `primary` ( "(" `arguments`? ")" )* ;
 - `arguments` -> `expression` ( "," `expression`)* ;
-- `primary` -> NUMBER | STRING | "true" | "false" | "nil" | "(" `expression` ")" | IDENTIFIER;
+- `primary` -> NUMBER | STRING | "true" | "false" | "nil" | "(" `expression` ")" | IDENTIFIER | `lambda`;
+- `lambda` -> "fun" "(" `parametrs`? ")" `block` ;
 
 ### Basic Rules for statements -
 - `program` -> `declaration`* EOF;
