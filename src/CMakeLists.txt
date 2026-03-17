@@ -8,6 +8,7 @@ set(SOURCES
     environment/environment.cpp
     function/native_function/nativeFunction.cpp
     function/function.cpp
+    resolver/resolver.cpp
 )
 
 
