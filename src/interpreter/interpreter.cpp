@@ -269,7 +269,7 @@ void Interpreter::visitReturnStmt(ReturnStmt *stmt)
 
 void Interpreter::visitLambdaExpr(LambdaExpr *expr)
 {
-    Token name = Token(IDENTIFIER, "<anonymous>", "<anonymous>", expr->fun.line);
+    Token name = Token(IDENTIFIER, "anonymous", "anonymous", expr->fun.line);
     std::shared_ptr<Function> lambda = std::make_shared<Function>(name, expr->params, expr->body, this->environment);
     result = lambda;
 }
@@ -286,6 +286,7 @@ void Interpreter::visitCallExpr(CallExpr *expr)
     std::vector<LiteralValue> arguments;
     for (const std::unique_ptr<Expr> &argument : expr->arguments)
     {
+       std::cout << stringify(evaluate(argument.get())) << std::endl;
         arguments.push_back(evaluate(argument.get()));
     }
 
@@ -373,9 +374,9 @@ void Interpreter::visitForStmt(ForStmt *stmt)
 {
     std::shared_ptr<Environment> previous = this->environment;
     EnvironmentStorage storage{this, previous};
-    std::shared_ptr<Environment> enclosed = std::make_shared<Environment>(this->environment);
+    std::shared_ptr<Environment> enclosed = std::make_shared<Environment>(previous);
     this->environment = enclosed;
-    if (stmt->initializer != nullptr)
+    if (stmt->initializer.get() != nullptr)
     {
         execute((stmt->initializer).get());
     }

@@ -191,11 +191,22 @@ void Resolver::visitTernaryExpr(TernaryExpr *expr)
 
 void Resolver::visitLambdaExpr(LambdaExpr *expr)
 {
+    FunctionType enclosingFunc = currentFunc;
+    currentFunc = FUNCTION;
+    beginScope();
+    for(Token param : expr->params)
+    {
+        declare(param);
+        define(param);
+    }
     resolve(expr->body);
+    endScope();
+    currentFunc = enclosingFunc;
 }
 
 void Resolver::visitForStmt(ForStmt *stmt)
 {
+    beginScope();
     if (stmt->initializer.get() != nullptr)
         resolve(stmt->initializer);
     if (stmt->condition.get() != nullptr)
@@ -203,6 +214,7 @@ void Resolver::visitForStmt(ForStmt *stmt)
     if (stmt->increment.get() != nullptr)
         resolve(stmt->increment);
     resolve(stmt->task);
+    endScope();
 }
 
 void Resolver::visitContinueStmt(ContinueStmt *stmt) {}
