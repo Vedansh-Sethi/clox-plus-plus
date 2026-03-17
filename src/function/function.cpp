@@ -8,21 +8,21 @@
 LiteralValue Function::call(Interpreter* interpreter, std::vector<LiteralValue> arguments)
 {
     std::shared_ptr<Environment> environment = std::make_shared<Environment>(closure);
-    for(int i = 0; i < declaration->params.size(); i++)
+    for(int i = 0; i < params.size(); i++)
     {
-        environment->define(declaration->params[i].lexeme, arguments[i]);
+        environment->define(params[i].lexeme, arguments[i]);
     }
 
-    interpreter->executeBlock(declaration->body, environment);
+    interpreter->executeBlock(body, environment);
     return std::monostate();
 }
 
 std::string Function::toString() const
 {
-    return "<fn " + declaration->name.lexeme + ">";
+    return "<fn " + name.lexeme + ">";
 }
 
 int Function::arity() const
 {
-    return declaration->params.size();
+    return params.size();
 }

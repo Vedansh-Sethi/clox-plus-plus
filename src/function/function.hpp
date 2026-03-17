@@ -9,12 +9,14 @@ class Interpreter;
 class Function : public Callable
 {
 private:
-    FunctionDeclStmt *declaration;
+    Token name;
+    std::vector<Token> params;
+    const std::vector<std::unique_ptr<Stmt>> &body;
     std::shared_ptr<Environment> closure;
 
 public:
     int arity() const override;
-    Function(FunctionDeclStmt* declaration, std::shared_ptr<Environment> closure) : declaration(declaration), closure(closure) {}
-    LiteralValue call(Interpreter* interpreter, std::vector<LiteralValue> params) override;
+    Function(Token name, std::vector<Token> params, const std::vector<std::unique_ptr<Stmt>> &body, std::shared_ptr<Environment> closure) : name(name), params(params), body(body), closure(closure) {}
+    LiteralValue call(Interpreter *interpreter, std::vector<LiteralValue> params) override;
     std::string toString() const override;
 };
