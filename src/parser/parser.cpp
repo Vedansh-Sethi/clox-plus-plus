@@ -303,6 +303,10 @@ std::unique_ptr<Expr> Parser::call()
 
 std::unique_ptr<Expr> Parser::primary()
 {
+    if (match<TokenType>(FUN))
+    {
+        return lambda();
+    }
     if (match<TokenType>(FALSE))
     {
         return std::make_unique<LiteralExpr>(false);
@@ -476,6 +480,26 @@ std::unique_ptr<Stmt> Parser::varDeclStmt()
     consume(SEMICOLON, "Expected \";\" after variable declaration");
     return std::make_unique<VarDeclStmt>(ident, std::move(initializer));
 }
+
+std::unique_ptr<Expr> Parser::lambda() 
+{
+    Token fun = previous();
+    consume(LEFT_PAREN, "Expected \"(\" after lambda declaration");
+    std::vector<Token> params;
+    if(!check(RIGHT_PAREN))
+    {
+        do
+        {
+            params.push_back(consume(IDENTIFIER, "Expected parameter name"));
+        } while (match(COMMA));
+    }
+    consume(RIGHT_PAREN, "Expected \")\" after parameters");
+    consume(LEFT_BRACE, "Expected \"{\" after lambda declaration");
+    std::vector<std::unique_ptr<Stmt>> body = block();
+
+    return std::make_unique<LambdaExpr>(fun, std::move(params), std::move(body));
+}
+
 
 std::unique_ptr<Stmt> Parser::funDeclStmt(std::string kind)
 {

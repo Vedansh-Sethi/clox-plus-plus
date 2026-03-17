@@ -28,6 +28,7 @@ private:
     std::unique_ptr<Expr> factor();
     std::unique_ptr<Expr> unary();
     std::unique_ptr<Expr> call();
+    std::unique_ptr<Expr> lambda();
     std::unique_ptr<Expr> primary();
 
     // statement parsing functions
