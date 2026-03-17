@@ -419,6 +419,11 @@ std::string Interpreter::stringify(LiteralValue value)
         return std::get<std::string>(value);
     }
 
+    if(std::holds_alternative<std::shared_ptr<Callable>>(value))
+    {
+        return std::get<std::shared_ptr<Callable>>(value)->toString();
+    }
+
     return "DEBUG";
 }
 
