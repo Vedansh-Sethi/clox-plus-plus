@@ -8,7 +8,7 @@
 #include "token/token.hpp"
 #include "error.hpp"
 #include "parser/parser.hpp"
-
+#include "resolver/resolver.hpp"
 void run(std::string source)
 {
     std::cout << "Starting compilation.." << std::endl;
@@ -21,14 +21,22 @@ void run(std::string source)
     Parser *parser = new Parser(tokens);
     const std::vector<std::unique_ptr<Stmt>>& stmts = parser->parse();
 
+
     if (ErrorHandler::hadError)
         return;
 
     // ASTPrinter *printer = ASTPrinter::getInstance();
     // std::cout << printer->print(expressions) << std::endl;
+    Interpreter *interpreter = new Interpreter();
+
+    std::cout << "Starting Resolving..." << std::endl;
+    Resolver resolver = Resolver(interpreter);
+    resolver.resolve(stmts);
+
+    if (ErrorHandler::hadError)
+        return;
 
     std::cout << "Starting Evaluating..." << std::endl;
-    Interpreter *interpreter = new Interpreter();
     interpreter->interpret(stmts);
 
     if (ErrorHandler::hadRuntimeError)
