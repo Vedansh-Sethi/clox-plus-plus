@@ -4,7 +4,7 @@
 
 void Environment::define(std::string ident, LiteralValue value)
 {
-    values.insert({ident, value});
+    values[ident] = value;
 }
 
 LiteralValue Environment::get(Token ident)
