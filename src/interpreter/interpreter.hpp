@@ -27,6 +27,7 @@ private:
     void visitAssignExpr(AssignExpr *expr) override;
     void visitLogicalExpr(LogicalExpr *expr) override;
     void visitCallExpr(CallExpr *expr) override;
+    void visitLambdaExpr(LambdaExpr *expr) override;
 
     // statement interpreting functions
     void visitPrintStmt(PrintStmt *stmt) override;

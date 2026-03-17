@@ -9,8 +9,10 @@ using LiteralValue = std::variant<std::monostate, std::string, double, bool, std
 
 bool checkInt(double n)
 {
-    if(n - floor(n) > 1e-6) return false;
-    if(ceil(n) - n > 1e-6) return false;
+    if (n - floor(n) > 1e-6)
+        return false;
+    if (ceil(n) - n > 1e-6)
+        return false;
     return true;
 }
 
@@ -25,7 +27,7 @@ void Interpreter::execute(Stmt *stmt)
     stmt->accept(this);
 }
 
-void Interpreter::executeBlock(const std::vector<std::unique_ptr<Stmt>>& stmts, std::shared_ptr<Environment> enclosed)
+void Interpreter::executeBlock(const std::vector<std::unique_ptr<Stmt>> &stmts, std::shared_ptr<Environment> enclosed)
 {
     std::shared_ptr<Environment> previous = this->environment;
     EnvironmentStorage storage{this, previous};
@@ -71,12 +73,12 @@ bool Interpreter::checkOperandValidity(Token opToken, LiteralValue right, Litera
     }
     if (opToken.type == MODULUS)
     {
-        if(!checkInt(std::get<double>(right)) || !checkInt(std::get<double>(left)))
+        if (!checkInt(std::get<double>(right)) || !checkInt(std::get<double>(left)))
         {
             throw ErrorHandler::RuntimeError(opToken, "Operands must be Integers");
             return false;
         }
-        if(std::get<double>(right) == 0) 
+        if (std::get<double>(right) == 0)
         {
             throw ErrorHandler::RuntimeError(opToken, "Remainder with respect to zero error");
             return false;
@@ -137,7 +139,7 @@ void Interpreter::visitBinaryExpr(BinaryExpr *expr)
             result = std::get<double>(left) / std::get<double>(right);
         break;
     case MODULUS:
-        if(checkOperandValidity(expr->op, right, left))
+        if (checkOperandValidity(expr->op, right, left))
             result = (double)((int)std::get<double>(left) % (int)std::get<double>(right));
         break;
     case STAR:
@@ -240,7 +242,7 @@ void Interpreter::visitLogicalExpr(LogicalExpr *expr)
 void Interpreter::visitReturnStmt(ReturnStmt *stmt)
 {
     LiteralValue value = std::monostate();
-    if(stmt->value.get() == nullptr)
+    if (stmt->value.get() == nullptr)
     {
         throw ReturnInstruction(value);
         return;
@@ -249,19 +251,26 @@ void Interpreter::visitReturnStmt(ReturnStmt *stmt)
     throw ReturnInstruction(value);
 }
 
+void Interpreter::visitLambdaExpr(LambdaExpr *expr)
+{
+    Token name = Token(IDENTIFIER, "<anonymous>", "<anonymous>", expr->fun.line);
+    std::shared_ptr<Function> lambda = std::make_shared<Function>(name, expr->params, expr->body, this->environment);
+    result = lambda;
+}
+
 void Interpreter::visitCallExpr(CallExpr *expr)
 {
     LiteralValue callee = evaluate((expr->callee).get());
+
+    if (!std::holds_alternative<std::shared_ptr<Callable>>(callee))
+    {
+        throw ErrorHandler::RuntimeError(expr->paren, "Can only call functions and classes");
+    }
 
     std::vector<LiteralValue> arguments;
     for (const std::unique_ptr<Expr> &argument : expr->arguments)
     {
         arguments.push_back(evaluate(argument.get()));
-    }
-
-    if (!std::holds_alternative<std::shared_ptr<Callable>>(callee))
-    {
-        throw ErrorHandler::RuntimeError(expr->paren, "Can only call functions and classes");
     }
 
     std::shared_ptr<Callable> function = std::get<std::shared_ptr<Callable>>(callee);
@@ -270,11 +279,11 @@ void Interpreter::visitCallExpr(CallExpr *expr)
     {
         throw ErrorHandler::RuntimeError(expr->paren, "Expected " + std::to_string(function->arity()) + " arguments but got " + std::to_string(arguments.size()) + " arguments");
     }
-    try 
+    try
     {
         result = function->call(this, arguments);
     }
-    catch(ReturnInstruction returnInstruction)
+    catch (ReturnInstruction returnInstruction)
     {
         result = returnInstruction.value;
     }
@@ -282,7 +291,7 @@ void Interpreter::visitCallExpr(CallExpr *expr)
 
 void Interpreter::visitFunctionDeclStmt(FunctionDeclStmt *stmt)
 {
-    std::shared_ptr<Function> func = std::make_shared<Function>(stmt, this->environment);
+    std::shared_ptr<Function> func = std::make_shared<Function>(stmt->name, stmt->params, stmt->body, this->environment);
     this->environment->define(stmt->name.lexeme, func);
 }
 
@@ -309,7 +318,7 @@ void Interpreter::visitVarDeclStmt(VarDeclStmt *stmt)
 
 void Interpreter::visitBlockStmt(BlockStmt *stmt)
 {
-    executeBlock(std::move(stmt->stmts), std::make_shared<Environment>(environment));
+    executeBlock(stmt->stmts, std::make_shared<Environment>(environment));
 }
 
 void Interpreter::visitIfStmt(IfStmt *stmt)
@@ -394,7 +403,8 @@ std::string Interpreter::stringify(LiteralValue value)
     }
     if (std::holds_alternative<double>(value))
     {
-        if(checkInt(std::get<double>(value))) return std::to_string((int)std::get<double>(value));
+        if (checkInt(std::get<double>(value)))
+            return std::to_string((int)std::get<double>(value));
         return std::to_string(std::get<double>(value));
     }
 
