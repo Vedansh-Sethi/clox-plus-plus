@@ -286,7 +286,6 @@ void Interpreter::visitCallExpr(CallExpr *expr)
     std::vector<LiteralValue> arguments;
     for (const std::unique_ptr<Expr> &argument : expr->arguments)
     {
-       std::cout << stringify(evaluate(argument.get())) << std::endl;
         arguments.push_back(evaluate(argument.get()));
     }
 
