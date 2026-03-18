@@ -22,6 +22,7 @@ int main(int argc, char *argv[])
             "Break : Token keyword",
             "Continue : Token keyword",
             "FunctionDecl : Token name, std::vector<Token> params, std::vector<std::unique_ptr<Stmt>> body",
+            "ClassDecl : Token name, std::vector<std::unique_ptr<FunctionDeclStmt>> methods",
         };
     defineAST(outputDir, "stmt", "Stmt", types);
 }
