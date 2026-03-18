@@ -24,6 +24,7 @@ int main(int argc, char *argv[])
             "Variable : Token ident",
             "Logical : std::unique_ptr<Expr> left, Token op, std::unique_ptr<Expr> right",
             "Call : std::unique_ptr<Expr> callee, Token paren, std::vector<std::unique_ptr<Expr>> arguments",
+            "Get : std::unique_ptr<Expr> object, Token name",
             "Lambda : Token fun, std::vector<Token> params, std::vector<std::unique_ptr<Stmt>> body",
         };
     defineAST(outputDir, "expr", "Expr", types);
