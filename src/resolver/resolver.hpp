@@ -32,6 +32,7 @@ class Resolver : public StmtVisitor, public ExprVisitor
     void visitForStmt(ForStmt* stmt) override;
     void visitContinueStmt(ContinueStmt* stmt) override;
     void visitBreakStmt(BreakStmt* stmt) override;
+    void visitClassDeclStmt(ClassDeclStmt* stmt) override;
 
     // expression visit methods
     void visitVariableExpr(VariableExpr *expr) override;
@@ -45,6 +46,7 @@ class Resolver : public StmtVisitor, public ExprVisitor
     void visitTernaryExpr(TernaryExpr* expr) override;
     void visitMultiExpr(MultiExpr* expr) override;
     void visitLogicalExpr(LogicalExpr* expr) override;
+    void visitGetExpr(GetExpr* expr) override;
     
 
     // helper methods

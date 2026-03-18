@@ -189,6 +189,17 @@ void Resolver::visitTernaryExpr(TernaryExpr *expr)
     }
 }
 
+void Resolver::visitClassDeclStmt(ClassDeclStmt* stmt)
+{
+    declare(stmt->name);
+    define(stmt->name);
+}
+
+void Resolver::visitGetExpr(GetExpr* expr)
+{
+    resolve(expr->object);
+}
+
 void Resolver::visitLambdaExpr(LambdaExpr *expr)
 {
     FunctionType enclosingFunc = currentFunc;
