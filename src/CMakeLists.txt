@@ -9,6 +9,8 @@ set(SOURCES
     function/native_function/nativeFunction.cpp
     function/function.cpp
     resolver/resolver.cpp
+    class/class.cpp
+    instance/instance.cpp
 )
 
 
