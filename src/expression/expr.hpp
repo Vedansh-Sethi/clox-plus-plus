@@ -15,6 +15,9 @@ class TernaryExpr;
 class VariableExpr;
 class LogicalExpr;
 class CallExpr;
+class GetExpr;
+class SetExpr;
+class ThisExpr;
 class LambdaExpr;
 
 class Stmt;
@@ -37,6 +40,9 @@ public:
      virtual void visitVariableExpr(VariableExpr* Expr) = 0;
      virtual void visitLogicalExpr(LogicalExpr* Expr) = 0;
      virtual void visitCallExpr(CallExpr* Expr) = 0;
+     virtual void visitGetExpr(GetExpr* Expr) = 0;
+     virtual void visitSetExpr(SetExpr* Expr) = 0;
+     virtual void visitThisExpr(ThisExpr* Expr) = 0;
      virtual void visitLambdaExpr(LambdaExpr* Expr) = 0;
 
 };
@@ -168,6 +174,45 @@ public:
 
      void accept(ExprVisitor* visitor) override {
          visitor->visitCallExpr(this);
+     }
+ };
+
+class GetExpr : public Expr {
+
+public: 
+     std::unique_ptr<Expr> object;
+     Token name;
+
+     GetExpr(std::unique_ptr<Expr> object,Token name) : object(std::move(object)), name(name) {}
+
+     void accept(ExprVisitor* visitor) override {
+         visitor->visitGetExpr(this);
+     }
+ };
+
+class SetExpr : public Expr {
+
+public: 
+     std::unique_ptr<Expr> object;
+     Token name;
+     std::unique_ptr<Expr> value;
+
+     SetExpr(std::unique_ptr<Expr> object,Token name,std::unique_ptr<Expr> value) : object(std::move(object)), name(name), value(std::move(value)) {}
+
+     void accept(ExprVisitor* visitor) override {
+         visitor->visitSetExpr(this);
+     }
+ };
+
+class ThisExpr : public Expr {
+
+public: 
+     Token keyword;
+
+     ThisExpr(Token keyword) : keyword(keyword) {}
+
+     void accept(ExprVisitor* visitor) override {
+         visitor->visitThisExpr(this);
      }
  };
 
