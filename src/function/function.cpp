@@ -4,6 +4,8 @@
 #include "token/token.hpp"
 #include "callable/callable.hpp"
 #include "function/function.hpp"
+#include "environment/environment.hpp"
+#include "statement/stmt.hpp"
 
 LiteralValue Function::call(Interpreter* interpreter, std::vector<LiteralValue> arguments)
 {
@@ -15,6 +17,13 @@ LiteralValue Function::call(Interpreter* interpreter, std::vector<LiteralValue> 
 
     interpreter->executeBlock(body, environment);
     return std::monostate();
+}
+
+std::shared_ptr<Function> Function::bind(std::shared_ptr<Instance> instance)
+{
+    std::shared_ptr<Environment> environment = std::make_shared<Environment>(closure);
+    environment->define("this", instance);
+    return std::make_shared<Function>(name, params, body, environment);
 }
 
 std::string Function::toString() const
