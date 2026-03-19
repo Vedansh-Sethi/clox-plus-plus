@@ -161,6 +161,12 @@ void Resolver::visitGroupingExpr(GroupingExpr *expr)
     resolve(expr->expression);
 }
 
+void Resolver::visitSetExpr(SetExpr* expr)
+{
+    resolve(expr->object);
+    resolve(expr->value);
+}
+
 void Resolver::visitLiteralExpr(LiteralExpr *expr) {}
 
 void Resolver::visitLogicalExpr(LogicalExpr *expr)
@@ -193,6 +199,22 @@ void Resolver::visitClassDeclStmt(ClassDeclStmt* stmt)
 {
     declare(stmt->name);
     define(stmt->name);
+
+    beginScope();
+    scopes.back()["this"] = true;
+
+    for(const std::unique_ptr<FunctionDeclStmt>& method : stmt->methods)
+    {
+        FunctionType declaration = METHOD;
+        resolveFunction(method.get(), declaration);
+    }
+
+    endScope();
+}
+
+void Resolver::visitThisExpr(ThisExpr *expr)
+{
+    resolveLocal(expr, expr->keyword);
 }
 
 void Resolver::visitGetExpr(GetExpr* expr)
