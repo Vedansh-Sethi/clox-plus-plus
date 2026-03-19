@@ -135,6 +135,11 @@ void Resolver::visitReturnStmt(ReturnStmt *stmt)
 {
     if (currentFunc == NONE)
         ErrorHandler::error(stmt->keyword, "Can't return from global scope");
+    if (stmt->value.get() != nullptr && currentFunc == INITIALIZER)
+        ErrorHandler::error(stmt->keyword, "Can't return value from an initializer");
+    if (stmt->value.get() == nullptr && currentFunc == INITIALIZER)
+        return;
+
     resolve(stmt->value);
 }
 
@@ -198,7 +203,7 @@ void Resolver::visitTernaryExpr(TernaryExpr *expr)
 void Resolver::visitClassDeclStmt(ClassDeclStmt* stmt)
 {
     ClassType enclosing = currentClass;
-    currentClass = CLASS;
+    currentClass = ClassType::CLASS;
     declare(stmt->name);
     define(stmt->name);
 
@@ -208,6 +213,10 @@ void Resolver::visitClassDeclStmt(ClassDeclStmt* stmt)
     for(const std::unique_ptr<FunctionDeclStmt>& method : stmt->methods)
     {
         FunctionType declaration = METHOD;
+        if(method->name.lexeme == "init")
+        {
+            declaration = INITIALIZER;
+        }
         resolveFunction(method.get(), declaration);
     }
 

@@ -9,10 +9,11 @@ enum FunctionType
 {
     NONE, 
     FUNCTION,
+    INITIALIZER,
     METHOD
 };
 
-enum ClassType
+enum class ClassType
 {
     NONE,
     CLASS,
