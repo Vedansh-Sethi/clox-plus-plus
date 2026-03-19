@@ -5,7 +5,7 @@
 #include "callable/callable.hpp"
 #include "function/native_function/nativeFunction.hpp"
 
-int ClockCallable::arity() const
+int ClockCallable::arity()
 {
     return 0;   
 }

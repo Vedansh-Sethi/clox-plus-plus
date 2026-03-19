@@ -6,7 +6,7 @@ class Callable;
 
 class ClockCallable : public Callable
 {
-    int arity() const override;
+    int arity() override;
     LiteralValue call(Interpreter* interpreter, std::vector<LiteralValue> arguments) override;
     std::string toString() const override;
 };
