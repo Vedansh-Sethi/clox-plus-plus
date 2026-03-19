@@ -539,7 +539,6 @@ std::unique_ptr<Stmt> Parser::declaration()
     {
         if (match(CLASS))
         {
-            std::cout << "Found class keyword" << std::endl;
             return classDeclStmt();
         }
         if (match(FUN))
