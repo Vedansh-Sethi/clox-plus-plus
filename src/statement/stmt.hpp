@@ -16,6 +16,7 @@ class ForStmt;
 class BreakStmt;
 class ContinueStmt;
 class FunctionDeclStmt;
+class ClassDeclStmt;
 
 
 class Stmt {
@@ -37,6 +38,7 @@ public:
      virtual void visitBreakStmt(BreakStmt* Stmt) = 0;
      virtual void visitContinueStmt(ContinueStmt* Stmt) = 0;
      virtual void visitFunctionDeclStmt(FunctionDeclStmt* Stmt) = 0;
+     virtual void visitClassDeclStmt(ClassDeclStmt* Stmt) = 0;
 
 };
 
@@ -179,6 +181,19 @@ public:
 
      void accept(StmtVisitor* visitor) override {
          visitor->visitFunctionDeclStmt(this);
+     }
+ };
+
+class ClassDeclStmt : public Stmt {
+
+public: 
+     Token name;
+     std::vector<std::unique_ptr<FunctionDeclStmt>> methods;
+
+     ClassDeclStmt(Token name,std::vector<std::unique_ptr<FunctionDeclStmt>> methods) : name(name), methods(std::move(methods)) {}
+
+     void accept(StmtVisitor* visitor) override {
+         visitor->visitClassDeclStmt(this);
      }
  };
 
