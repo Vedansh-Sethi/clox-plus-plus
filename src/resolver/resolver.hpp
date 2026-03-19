@@ -8,7 +8,8 @@
 enum FunctionType
 {
     NONE, 
-    FUNCTION
+    FUNCTION,
+    METHOD
 };
 
 using Scope = std::unordered_map<std::string, bool>;
@@ -47,6 +48,8 @@ class Resolver : public StmtVisitor, public ExprVisitor
     void visitMultiExpr(MultiExpr* expr) override;
     void visitLogicalExpr(LogicalExpr* expr) override;
     void visitGetExpr(GetExpr* expr) override;
+    void visitSetExpr(SetExpr* expr) override;
+    void visitThisExpr(ThisExpr* expr) override;
     
 
     // helper methods

@@ -2,9 +2,10 @@
 #include <iostream>
 #include <vector>
 #include <stdexcept>
-#include "token/token.hpp"
 #include "expression/expr.hpp"
 #include "statement/stmt.hpp"
+
+class Token; 
 
 class Parser
 {
@@ -33,7 +34,8 @@ private:
 
     // statement parsing functions
     std::unique_ptr<Stmt> declaration();
-    std::unique_ptr<Stmt> funDeclStmt(std::string kind);
+    std::unique_ptr<FunctionDeclStmt> funDeclStmt(std::string kind);
+    std::unique_ptr<Stmt> classDeclStmt();
     std::unique_ptr<Stmt> varDeclStmt();
     std::unique_ptr<Stmt> statement();
     std::unique_ptr<Stmt> printStmt();
