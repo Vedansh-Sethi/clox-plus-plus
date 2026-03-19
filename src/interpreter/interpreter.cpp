@@ -264,7 +264,6 @@ void Interpreter::visitReturnStmt(ReturnStmt *stmt)
     if (stmt->value.get() == nullptr)
     {
         throw ReturnInstruction(value);
-        return;
     }
     value = evaluate(stmt->value.get());
     throw ReturnInstruction(value);
@@ -273,7 +272,7 @@ void Interpreter::visitReturnStmt(ReturnStmt *stmt)
 void Interpreter::visitLambdaExpr(LambdaExpr *expr)
 {
     Token name = Token(IDENTIFIER, "anonymous", "anonymous", expr->fun.line);
-    std::shared_ptr<Function> lambda = std::make_shared<Function>(name, expr->params, expr->body, this->environment);
+    std::shared_ptr<Function> lambda = std::make_shared<Function>(name, expr->params, expr->body, this->environment, false);
     result = lambda;
 }
 
@@ -298,19 +297,12 @@ void Interpreter::visitCallExpr(CallExpr *expr)
     {
         throw ErrorHandler::RuntimeError(expr->paren, "Expected " + std::to_string(function->arity()) + " arguments but got " + std::to_string(arguments.size()) + " arguments");
     }
-    try
-    {
-        result = function->call(this, arguments);
-    }
-    catch (ReturnInstruction returnInstruction)
-    {
-        result = returnInstruction.value;
-    }
+    result = function->call(this, arguments);
 }
 
 void Interpreter::visitFunctionDeclStmt(FunctionDeclStmt *stmt)
 {
-    std::shared_ptr<Function> func = std::make_shared<Function>(stmt->name, stmt->params, stmt->body, this->environment);
+    std::shared_ptr<Function> func = std::make_shared<Function>(stmt->name, stmt->params, stmt->body, this->environment, false);
     this->environment->define(stmt->name.lexeme, func);
 }
 
@@ -357,9 +349,9 @@ void Interpreter::visitClassDeclStmt(ClassDeclStmt *stmt)
     environment->define(stmt->name.lexeme, std::monostate());
     std::unordered_map<std::string, std::shared_ptr<Function>> methods;
 
-    for(const std::unique_ptr<FunctionDeclStmt>& method : stmt->methods)
+    for (const std::unique_ptr<FunctionDeclStmt> &method : stmt->methods)
     {
-        std::shared_ptr<Function> function = std::make_shared<Function>(method->name, method->params, method->body, environment);
+        std::shared_ptr<Function> function = std::make_shared<Function>(method->name, method->params, method->body, environment, method->name.lexeme == "init");
         methods[method->name.lexeme] = function;
     }
 
@@ -367,7 +359,7 @@ void Interpreter::visitClassDeclStmt(ClassDeclStmt *stmt)
     environment->assign(stmt->name, klass);
 }
 
-void Interpreter::visitThisExpr(ThisExpr* expr)
+void Interpreter::visitThisExpr(ThisExpr *expr)
 {
     result = lookUpVariable(expr->keyword, expr);
 }
@@ -448,11 +440,10 @@ void Interpreter::visitGetExpr(GetExpr *expr)
 void Interpreter::visitSetExpr(SetExpr *expr)
 {
     LiteralValue object = evaluate(expr->object.get());
-    if(!std::holds_alternative<std::shared_ptr<Instance>>(object))
+    if (!std::holds_alternative<std::shared_ptr<Instance>>(object))
     {
         throw ErrorHandler::RuntimeError(expr->name, "Only class instances have fields");
     }
-
 
     LiteralValue value = evaluate(expr->value.get());
     std::shared_ptr<Instance> obj = std::get<std::shared_ptr<Instance>>(object);

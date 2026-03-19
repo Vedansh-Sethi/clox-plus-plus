@@ -58,6 +58,15 @@ public:
     void executeBlock(const std::vector<std::unique_ptr<Stmt>> &stmts, std::shared_ptr<Environment> enclosed);
     void resolve(Expr *expr, int depth);
 
+    class ReturnInstruction
+    {
+    public:
+        LiteralValue value;
+        ReturnInstruction(LiteralValue value = std::monostate()) : value(value)
+        {
+        }
+    };
+
 private:
     // helper functions
     bool isTruthy(LiteralValue value);
@@ -71,14 +80,6 @@ private:
     };
     class ContinueInstruction
     {
-    };
-    class ReturnInstruction
-    {
-    public:
-        LiteralValue value;
-        ReturnInstruction(LiteralValue value = std::monostate()) : value(value)
-        {
-        }
     };
     struct EnvironmentStorage
     {
