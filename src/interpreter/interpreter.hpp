@@ -3,11 +3,12 @@
 #include "expression/expr.hpp"
 #include "statement/stmt.hpp"
 #include "environment/environment.hpp"
-#include "callable/callable.hpp"
-#include "token/token.hpp"
-#include "function/native_function/nativeFunction.hpp"
 
-using Map = std::unordered_map<Expr*, int>;
+using Map = std::unordered_map<Expr *, int>;
+class Callable;
+class Token;
+class Environment;
+class NativeFunction;
 
 class Interpreter : public ExprVisitor, public StmtVisitor
 {
@@ -31,6 +32,9 @@ private:
     void visitLogicalExpr(LogicalExpr *expr) override;
     void visitCallExpr(CallExpr *expr) override;
     void visitLambdaExpr(LambdaExpr *expr) override;
+    void visitGetExpr(GetExpr *expr) override;
+    void visitSetExpr(SetExpr *expr) override;
+    void visitThisExpr(ThisExpr *expr) override;
 
     // statement interpreting functions
     void visitPrintStmt(PrintStmt *stmt) override;
@@ -44,6 +48,7 @@ private:
     void visitForStmt(ForStmt *stmt) override;
     void visitFunctionDeclStmt(FunctionDeclStmt *stmt) override;
     void visitReturnStmt(ReturnStmt *stmt) override;
+    void visitClassDeclStmt(ClassDeclStmt *stmt) override;
 
 public:
     std::shared_ptr<Environment> globals = std::make_shared<Environment>();
@@ -51,12 +56,12 @@ public:
     Interpreter();
     void interpret(const std::vector<std::unique_ptr<Stmt>> &stmts);
     void executeBlock(const std::vector<std::unique_ptr<Stmt>> &stmts, std::shared_ptr<Environment> enclosed);
-    void resolve(Expr* expr, int depth);
+    void resolve(Expr *expr, int depth);
 
 private:
     // helper functions
     bool isTruthy(LiteralValue value);
-    LiteralValue lookUpVariable(Token ident, Expr* expr);
+    LiteralValue lookUpVariable(Token ident, Expr *expr);
     bool checkOperandValidity(Token opToken, LiteralValue right, LiteralValue left);
     bool checkOperandValidity(Token opToken, LiteralValue operand);
     bool isEqual(LiteralValue left, LiteralValue right);

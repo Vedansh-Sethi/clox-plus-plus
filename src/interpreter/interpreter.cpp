@@ -4,8 +4,11 @@
 #include "error.hpp"
 #include "callable/callable.hpp"
 #include "function/function.hpp"
+#include "function/native_function/nativeFunction.hpp"
+#include "class/class.hpp"
+#include "instance/instance.hpp"
 
-using LiteralValue = std::variant<std::monostate, std::string, double, bool, std::shared_ptr<Callable>>;
+using LiteralValue = std::variant<std::monostate, std::string, double, bool, std::shared_ptr<Callable>, std::shared_ptr<Instance>>;
 
 bool checkInt(double n)
 {
@@ -349,6 +352,26 @@ void Interpreter::visitIfStmt(IfStmt *stmt)
     }
 }
 
+void Interpreter::visitClassDeclStmt(ClassDeclStmt *stmt)
+{
+    environment->define(stmt->name.lexeme, std::monostate());
+    std::unordered_map<std::string, std::shared_ptr<Function>> methods;
+
+    for(const std::unique_ptr<FunctionDeclStmt>& method : stmt->methods)
+    {
+        std::shared_ptr<Function> function = std::make_shared<Function>(method->name, method->params, method->body, environment);
+        methods[method->name.lexeme] = function;
+    }
+
+    std::shared_ptr<Class> klass = std::make_shared<Class>(stmt->name.lexeme, methods);
+    environment->assign(stmt->name, klass);
+}
+
+void Interpreter::visitThisExpr(ThisExpr* expr)
+{
+    result = lookUpVariable(expr->keyword, expr);
+}
+
 void Interpreter::visitWhileStmt(WhileStmt *stmt)
 {
     try
@@ -411,6 +434,32 @@ void Interpreter::visitContinueStmt(ContinueStmt *stmt)
     throw ContinueInstruction();
 }
 
+void Interpreter::visitGetExpr(GetExpr *expr)
+{
+    LiteralValue object = evaluate(expr->object.get());
+    if (std::holds_alternative<std::shared_ptr<Instance>>(object))
+    {
+        result = (std::get<std::shared_ptr<Instance>>(object))->get(expr->name);
+        return;
+    }
+    throw ErrorHandler::RuntimeError(expr->name, "Only instances have properties");
+}
+
+void Interpreter::visitSetExpr(SetExpr *expr)
+{
+    LiteralValue object = evaluate(expr->object.get());
+    if(!std::holds_alternative<std::shared_ptr<Instance>>(object))
+    {
+        throw ErrorHandler::RuntimeError(expr->name, "Only class instances have fields");
+    }
+
+
+    LiteralValue value = evaluate(expr->value.get());
+    std::shared_ptr<Instance> obj = std::get<std::shared_ptr<Instance>>(object);
+
+    obj->set(expr->name, value);
+}
+
 std::string Interpreter::stringify(LiteralValue value)
 {
     if (std::holds_alternative<std::monostate>(value))
@@ -438,6 +487,10 @@ std::string Interpreter::stringify(LiteralValue value)
     if (std::holds_alternative<std::shared_ptr<Callable>>(value))
     {
         return std::get<std::shared_ptr<Callable>>(value)->toString();
+    }
+    if (std::holds_alternative<std::shared_ptr<Instance>>(value))
+    {
+        return std::get<std::shared_ptr<Instance>>(value)->toString();
     }
 
     return "DEBUG";
