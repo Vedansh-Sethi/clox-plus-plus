@@ -128,6 +128,10 @@ std::unique_ptr<Expr> Parser::assignment()
             Token ident = varExpr->ident;
             return std::make_unique<AssignExpr>(ident, std::move(value));
         }
+        else if (GetExpr *getExpr = dynamic_cast<GetExpr *>(expr.get()))
+        {
+            return std::make_unique<SetExpr>(std::move(getExpr->object), getExpr->name, std::move(value));
+        }
 
         ErrorHandler::error(equals, "Invalid Assignment Target");
     }
@@ -257,7 +261,7 @@ std::unique_ptr<Stmt> Parser::returnStmt()
 {
     Token keyword = previous();
     std::unique_ptr<Expr> value = nullptr;
-    if(!check(SEMICOLON))
+    if (!check(SEMICOLON))
     {
         value = expression();
     }
@@ -292,6 +296,11 @@ std::unique_ptr<Expr> Parser::call()
         {
             expr = finishCall(std::move(expr));
         }
+        else if (match(DOT))
+        {
+            Token name = consume(IDENTIFIER, "Expect property name after \".\"");
+            expr = std::make_unique<GetExpr>(std::move(expr), name);
+        }
         else
         {
             break;
@@ -322,6 +331,10 @@ std::unique_ptr<Expr> Parser::primary()
     if (match<TokenType>(IDENTIFIER))
     {
         return std::make_unique<VariableExpr>(previous());
+    }
+    if (match<TokenType>(THIS))
+    {
+        return std::make_unique<ThisExpr>(previous());
     }
     if (match<TokenType>(NUMBER, STRING))
     {
@@ -448,7 +461,7 @@ std::unique_ptr<Stmt> Parser::forStmt()
 
 std::unique_ptr<Stmt> Parser::statement()
 {
-    if(match(RETURN))
+    if (match(RETURN))
         return returnStmt();
     if (match(PRINT))
         return printStmt();
@@ -481,12 +494,12 @@ std::unique_ptr<Stmt> Parser::varDeclStmt()
     return std::make_unique<VarDeclStmt>(ident, std::move(initializer));
 }
 
-std::unique_ptr<Expr> Parser::lambda() 
+std::unique_ptr<Expr> Parser::lambda()
 {
     Token fun = previous();
     consume(LEFT_PAREN, "Expected \"(\" after lambda declaration");
     std::vector<Token> params;
-    if(!check(RIGHT_PAREN))
+    if (!check(RIGHT_PAREN))
     {
         do
         {
@@ -500,8 +513,7 @@ std::unique_ptr<Expr> Parser::lambda()
     return std::make_unique<LambdaExpr>(fun, std::move(params), std::move(body));
 }
 
-
-std::unique_ptr<Stmt> Parser::funDeclStmt(std::string kind)
+std::unique_ptr<FunctionDeclStmt> Parser::funDeclStmt(std::string kind)
 {
     Token name = consume(IDENTIFIER, "Expected " + kind + " name");
     consume(LEFT_PAREN, "Expect \"(\" after " + kind + " name");
@@ -525,6 +537,11 @@ std::unique_ptr<Stmt> Parser::declaration()
 {
     try
     {
+        if (match(CLASS))
+        {
+            std::cout << "Found class keyword" << std::endl;
+            return classDeclStmt();
+        }
         if (match(FUN))
         {
             return funDeclStmt("function");
@@ -541,6 +558,24 @@ std::unique_ptr<Stmt> Parser::declaration()
         synchronize();
         return nullptr;
     }
+}
+
+std::unique_ptr<Stmt> Parser::classDeclStmt()
+{
+    Token name = consume(IDENTIFIER, "Expected class name");
+    consume(LEFT_BRACE, "Expected \"{\" before class body");
+
+    std::vector<std::unique_ptr<FunctionDeclStmt>> methods;
+
+    while (!check(RIGHT_BRACE) && !isAtEnd())
+    {
+
+        methods.push_back(funDeclStmt("method"));
+    }
+
+    consume(RIGHT_BRACE, "Expected \"}\" after class body");
+
+    return std::make_unique<ClassDeclStmt>(name, std::move(methods));
 }
 
 std::unique_ptr<Stmt> Parser::blockStmt()
