@@ -2,6 +2,7 @@
 #include <memory>
 #include "token/token.hpp"
 #include "callable/callable.hpp"
+#include "instance/instance.hpp"
 #include <string>
 class Callable;
 
@@ -116,6 +117,11 @@ std::string LiteralPrinter::operator()(const std::shared_ptr<Callable>& c) const
     return c->toString();
 }
 
+std::string LiteralPrinter::operator()(const std::shared_ptr<Instance>& i) const
+{
+    return i->toString();
+}
+
 std::string literalToString(const LiteralValue& val)
 {
     return std::visit(LiteralPrinter{}, val);
@@ -134,6 +140,10 @@ std::string Token::literalToString() const
     if(std::holds_alternative<std::shared_ptr<Callable>>(literal))
     {
         return std::get<std::shared_ptr<Callable>>(literal)->toString();
+    }
+    if(std::holds_alternative<std::shared_ptr<Instance>>(literal))
+    {
+        return std::get<std::shared_ptr<Instance>>(literal)->toString();
     }
     return "";
 }
