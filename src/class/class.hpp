@@ -17,7 +17,7 @@ class Class : public Callable, public std::enable_shared_from_this<Class>
 public:
     Class(std::string name, Methods methods) : name(name), methods(methods) {}
     LiteralValue call(Interpreter* interpreter, std::vector<LiteralValue> arguments) override;
-    int arity() const override;
+    int arity() override;
     std::string toString() const override;
     std::shared_ptr<Function> findMethod(std::string name);
 };
