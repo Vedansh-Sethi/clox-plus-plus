@@ -197,6 +197,8 @@ void Resolver::visitTernaryExpr(TernaryExpr *expr)
 
 void Resolver::visitClassDeclStmt(ClassDeclStmt* stmt)
 {
+    ClassType enclosing = currentClass;
+    currentClass = CLASS;
     declare(stmt->name);
     define(stmt->name);
 
@@ -210,10 +212,15 @@ void Resolver::visitClassDeclStmt(ClassDeclStmt* stmt)
     }
 
     endScope();
+    currentClass = enclosing;
 }
 
 void Resolver::visitThisExpr(ThisExpr *expr)
 {
+    if(currentClass == ClassType::NONE)
+    {
+        ErrorHandler::error(expr->keyword, "Can't use 'this' keyword outside of a class");
+    }
     resolveLocal(expr, expr->keyword);
 }
 

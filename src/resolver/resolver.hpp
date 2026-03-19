@@ -12,6 +12,12 @@ enum FunctionType
     METHOD
 };
 
+enum ClassType
+{
+    NONE,
+    CLASS,
+};
+
 using Scope = std::unordered_map<std::string, bool>;
 
 class Resolver : public StmtVisitor, public ExprVisitor
@@ -19,7 +25,8 @@ class Resolver : public StmtVisitor, public ExprVisitor
     // private variables
     Interpreter* interpreter;
     std::vector<Scope> scopes;
-    FunctionType currentFunc = NONE;
+    FunctionType currentFunc = FunctionType::NONE;
+    ClassType currentClass = ClassType::NONE;
 
     // statement visit methods
     void visitBlockStmt(BlockStmt *stmt) override;
