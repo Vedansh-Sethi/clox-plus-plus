@@ -189,8 +189,9 @@ class ClassDeclStmt : public Stmt {
 public: 
      Token name;
      std::vector<std::unique_ptr<FunctionDeclStmt>> methods;
+     std::vector<std::unique_ptr<FunctionDeclStmt>> statics;
 
-     ClassDeclStmt(Token name,std::vector<std::unique_ptr<FunctionDeclStmt>> methods) : name(name), methods(std::move(methods)) {}
+     ClassDeclStmt(Token name,std::vector<std::unique_ptr<FunctionDeclStmt>> methods,std::vector<std::unique_ptr<FunctionDeclStmt>> statics) : name(name), methods(std::move(methods)), statics(std::move(statics)) {}
 
      void accept(StmtVisitor* visitor) override {
          visitor->visitClassDeclStmt(this);
