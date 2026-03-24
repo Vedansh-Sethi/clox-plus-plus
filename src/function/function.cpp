@@ -37,11 +37,11 @@ LiteralValue Function::call(Interpreter *interpreter, std::vector<LiteralValue> 
     return std::monostate();
 }
 
-std::shared_ptr<Function> Function::bind(std::shared_ptr<Instance> instance)
+Function* Function::bind(Instance* instance)
 {
     std::shared_ptr<Environment> environment = std::make_shared<Environment>(closure);
     environment->define("this", instance);
-    return std::make_shared<Function>(name, params, body, environment, isInitializer);
+    return new Function(name, params, body, environment, isInitializer);
 }
 
 std::string Function::toString() const

@@ -8,7 +8,7 @@ class Callable;
 class Instance;
 
 // std::monostate is equivalent to null
-using LiteralValue = std::variant<std::monostate, std::string, double, bool, std::shared_ptr<Callable>, std::shared_ptr<Instance>>;
+using LiteralValue = std::variant<std::monostate, std::string, double, bool, Callable*, Instance*>;
 
 struct LiteralPrinter
 {
@@ -16,8 +16,8 @@ struct LiteralPrinter
     std::string operator()(const std::string &s) const { return s; }
     std::string operator()(double d) const { return std::to_string(d); }
     std::string operator()(bool b) const { return b ? "true" : "false"; }
-    std::string operator()(const std::shared_ptr<Callable> &c) const;
-    std::string operator()(const std::shared_ptr<Instance> &i) const;
+    std::string operator()(Callable* c) const;
+    std::string operator()(Instance* i) const;
 };
 
 std::string literalToString(const LiteralValue& val);

@@ -1,6 +1,7 @@
 #include "instance/instance.hpp"
 #include "error.hpp"
 #include "function/function.hpp"
+#include "class/class.hpp"
 
 
 std::string Instance::toString() const
@@ -15,8 +16,8 @@ LiteralValue Instance::get(Token name)
         return fields.at(name.lexeme);
     }
 
-    std::shared_ptr<Function> method = klass->findMethod(name.lexeme);
-    if(method != nullptr) return method->bind(shared_from_this());
+    Function* method = klass->findMethod(name.lexeme);
+    if(method != nullptr) return method->bind(this);
 
     throw ErrorHandler::RuntimeError(name, "Undefined property " + name.lexeme);
 }

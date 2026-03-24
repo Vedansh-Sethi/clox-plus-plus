@@ -112,12 +112,12 @@ std::string tokenTypeToString(TokenType type)
 }
 
 
-std::string LiteralPrinter::operator()(const std::shared_ptr<Callable>& c) const
+std::string LiteralPrinter::operator()(Callable* c) const
 {
     return c->toString();
 }
 
-std::string LiteralPrinter::operator()(const std::shared_ptr<Instance>& i) const
+std::string LiteralPrinter::operator()(Instance* i) const
 {
     return i->toString();
 }
@@ -137,13 +137,13 @@ std::string Token::literalToString() const
         return std::to_string(std::get<double>(literal));
     if (std::holds_alternative<bool>(literal))
         return std::get<bool>(literal) ? "true" : "false";
-    if(std::holds_alternative<std::shared_ptr<Callable>>(literal))
+    if(std::holds_alternative<Callable*>(literal))
     {
-        return std::get<std::shared_ptr<Callable>>(literal)->toString();
+        return std::get<Callable*>(literal)->toString();
     }
-    if(std::holds_alternative<std::shared_ptr<Instance>>(literal))
+    if(std::holds_alternative<Instance*>(literal))
     {
-        return std::get<std::shared_ptr<Instance>>(literal)->toString();
+        return std::get<Instance*>(literal)->toString();
     }
     return "";
 }

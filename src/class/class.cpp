@@ -13,8 +13,8 @@ std::string Class::toString() const
 
 int Class::arity()
 {
-    std::shared_ptr<Function> initializer = findMethod("init");
-    if(initializer.get() != nullptr)
+    Function* initializer = findMethod("init");
+    if(initializer != nullptr)
     {
         return initializer->arity();
     }
@@ -23,16 +23,16 @@ int Class::arity()
 
 LiteralValue Class::call(Interpreter* interpreter, std::vector<LiteralValue> arguments)
 {
-    std::shared_ptr<Instance> instance = std::make_shared<Instance>(shared_from_this());
-    std::shared_ptr<Function> initializer = findMethod("init");
-    if(initializer.get() != nullptr)
+    Instance* instance = new Instance(this);
+    Function* initializer = findMethod("init");
+    if(initializer != nullptr)
     {
         initializer->bind(instance)->call(interpreter, arguments);
     }
     return instance;
 }
 
-std::shared_ptr<Function> Class::findMethod(std::string name)
+Function* Class::findMethod(std::string name)
 {
     if(methods.count(name))
     {
