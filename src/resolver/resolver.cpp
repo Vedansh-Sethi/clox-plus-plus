@@ -166,7 +166,7 @@ void Resolver::visitGroupingExpr(GroupingExpr *expr)
     resolve(expr->expression);
 }
 
-void Resolver::visitSetExpr(SetExpr* expr)
+void Resolver::visitSetExpr(SetExpr *expr)
 {
     resolve(expr->object);
     resolve(expr->value);
@@ -200,7 +200,7 @@ void Resolver::visitTernaryExpr(TernaryExpr *expr)
     }
 }
 
-void Resolver::visitClassDeclStmt(ClassDeclStmt* stmt)
+void Resolver::visitClassDeclStmt(ClassDeclStmt *stmt)
 {
     ClassType enclosing = currentClass;
     currentClass = ClassType::CLASS;
@@ -210,14 +210,24 @@ void Resolver::visitClassDeclStmt(ClassDeclStmt* stmt)
     beginScope();
     scopes.back()["this"] = true;
 
-    for(const std::unique_ptr<FunctionDeclStmt>& method : stmt->methods)
+    for (const std::unique_ptr<FunctionDeclStmt> &method : stmt->methods)
     {
         FunctionType declaration = METHOD;
-        if(method->name.lexeme == "init")
+        if (method->name.lexeme == "init")
         {
             declaration = INITIALIZER;
         }
         resolveFunction(method.get(), declaration);
+    }
+
+    for (const std::unique_ptr<FunctionDeclStmt> &stat : stmt->statics)
+    {
+        FunctionType declaration = METHOD;
+        if (stat->name.lexeme == "init")
+        {
+            ErrorHandler::error(stat->name, "Statics Function cannot be named \"init\"");
+        }
+        resolveFunction(stat.get(), declaration);
     }
 
     endScope();
@@ -226,14 +236,14 @@ void Resolver::visitClassDeclStmt(ClassDeclStmt* stmt)
 
 void Resolver::visitThisExpr(ThisExpr *expr)
 {
-    if(currentClass == ClassType::NONE)
+    if (currentClass == ClassType::NONE)
     {
         ErrorHandler::error(expr->keyword, "Can't use 'this' keyword outside of a class");
     }
     resolveLocal(expr, expr->keyword);
 }
 
-void Resolver::visitGetExpr(GetExpr* expr)
+void Resolver::visitGetExpr(GetExpr *expr)
 {
     resolve(expr->object);
 }
@@ -243,7 +253,7 @@ void Resolver::visitLambdaExpr(LambdaExpr *expr)
     FunctionType enclosingFunc = currentFunc;
     currentFunc = FUNCTION;
     beginScope();
-    for(Token param : expr->params)
+    for (Token param : expr->params)
     {
         declare(param);
         define(param);
