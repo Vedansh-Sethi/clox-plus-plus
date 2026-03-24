@@ -565,16 +565,17 @@ std::unique_ptr<Stmt> Parser::classDeclStmt()
     consume(LEFT_BRACE, "Expected \"{\" before class body");
 
     std::vector<std::unique_ptr<FunctionDeclStmt>> methods;
+    std::vector<std::unique_ptr<FunctionDeclStmt>> statics;
 
     while (!check(RIGHT_BRACE) && !isAtEnd())
     {
-
-        methods.push_back(funDeclStmt("method"));
+        if(match(CLASS)) statics.push_back(funDeclStmt("statics method"));
+        else methods.push_back(funDeclStmt("method"));
     }
 
     consume(RIGHT_BRACE, "Expected \"}\" after class body");
 
-    return std::make_unique<ClassDeclStmt>(name, std::move(methods));
+    return std::make_unique<ClassDeclStmt>(name, std::move(methods), std::move(statics));
 }
 
 std::unique_ptr<Stmt> Parser::blockStmt()
