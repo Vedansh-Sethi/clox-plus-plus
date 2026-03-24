@@ -8,7 +8,7 @@
 #include "class/class.hpp"
 #include "instance/instance.hpp"
 
-using LiteralValue = std::variant<std::monostate, std::string, double, bool, std::shared_ptr<Callable>, std::shared_ptr<Instance>>;
+using LiteralValue = std::variant<std::monostate, std::string, double, bool, Callable *, Instance *>;
 
 bool checkInt(double n)
 {
@@ -272,7 +272,7 @@ void Interpreter::visitReturnStmt(ReturnStmt *stmt)
 void Interpreter::visitLambdaExpr(LambdaExpr *expr)
 {
     Token name = Token(IDENTIFIER, "anonymous", "anonymous", expr->fun.line);
-    std::shared_ptr<Function> lambda = std::make_shared<Function>(name, expr->params, expr->body, this->environment, false);
+    Function *lambda = new Function(name, expr->params, expr->body, this->environment, false);
     result = lambda;
 }
 
@@ -280,7 +280,7 @@ void Interpreter::visitCallExpr(CallExpr *expr)
 {
     LiteralValue callee = evaluate((expr->callee).get());
 
-    if (!std::holds_alternative<std::shared_ptr<Callable>>(callee))
+    if (!std::holds_alternative<Callable *>(callee))
     {
         throw ErrorHandler::RuntimeError(expr->paren, "Can only call functions and classes");
     }
@@ -291,7 +291,7 @@ void Interpreter::visitCallExpr(CallExpr *expr)
         arguments.push_back(evaluate(argument.get()));
     }
 
-    std::shared_ptr<Callable> function = std::get<std::shared_ptr<Callable>>(callee);
+    Callable *function = std::get<Callable *>(callee);
 
     if (arguments.size() != function->arity())
     {
@@ -302,7 +302,7 @@ void Interpreter::visitCallExpr(CallExpr *expr)
 
 void Interpreter::visitFunctionDeclStmt(FunctionDeclStmt *stmt)
 {
-    std::shared_ptr<Function> func = std::make_shared<Function>(stmt->name, stmt->params, stmt->body, this->environment, false);
+    Function *func = new Function(stmt->name, stmt->params, stmt->body, this->environment, false);
     this->environment->define(stmt->name.lexeme, func);
 }
 
@@ -347,16 +347,24 @@ void Interpreter::visitIfStmt(IfStmt *stmt)
 void Interpreter::visitClassDeclStmt(ClassDeclStmt *stmt)
 {
     environment->define(stmt->name.lexeme, std::monostate());
-    std::unordered_map<std::string, std::shared_ptr<Function>> methods;
+    std::unordered_map<std::string, Function *> methods;
+    std::unordered_map<std::string, Function *> statics;
 
     for (const std::unique_ptr<FunctionDeclStmt> &method : stmt->methods)
     {
-        std::shared_ptr<Function> function = std::make_shared<Function>(method->name, method->params, method->body, environment, method->name.lexeme == "init");
+        Function *function = new Function(method->name, method->params, method->body, environment, method->name.lexeme == "init");
         methods[method->name.lexeme] = function;
     }
 
-    std::shared_ptr<Class> klass = std::make_shared<Class>(stmt->name.lexeme, methods);
-    environment->assign(stmt->name, klass);
+    for (const std::unique_ptr<FunctionDeclStmt> &stat : stmt->statics)
+    {
+        Function *func = new Function(stat->name, stat->params, stat->body, environment, false);
+        statics[stat->name.lexeme] = func;
+    }
+
+    Class *metaClass = new Class(stmt->name.lexeme + " class", statics);
+    Class *klass = new Class(stmt->name.lexeme, methods, metaClass);
+    environment->assign(stmt->name, dynamic_cast<Instance*>(klass));
 }
 
 void Interpreter::visitThisExpr(ThisExpr *expr)
@@ -429,9 +437,9 @@ void Interpreter::visitContinueStmt(ContinueStmt *stmt)
 void Interpreter::visitGetExpr(GetExpr *expr)
 {
     LiteralValue object = evaluate(expr->object.get());
-    if (std::holds_alternative<std::shared_ptr<Instance>>(object))
+    if (std::holds_alternative<Instance *>(object))
     {
-        result = (std::get<std::shared_ptr<Instance>>(object))->get(expr->name);
+        result = (std::get<Instance *>(object))->get(expr->name);
         return;
     }
     throw ErrorHandler::RuntimeError(expr->name, "Only instances have properties");
@@ -440,13 +448,13 @@ void Interpreter::visitGetExpr(GetExpr *expr)
 void Interpreter::visitSetExpr(SetExpr *expr)
 {
     LiteralValue object = evaluate(expr->object.get());
-    if (!std::holds_alternative<std::shared_ptr<Instance>>(object))
+    if (!std::holds_alternative<Instance *>(object))
     {
         throw ErrorHandler::RuntimeError(expr->name, "Only class instances have fields");
     }
 
     LiteralValue value = evaluate(expr->value.get());
-    std::shared_ptr<Instance> obj = std::get<std::shared_ptr<Instance>>(object);
+    Instance *obj = std::get<Instance *>(object);
 
     obj->set(expr->name, value);
 }
@@ -475,13 +483,13 @@ std::string Interpreter::stringify(LiteralValue value)
         return std::get<std::string>(value);
     }
 
-    if (std::holds_alternative<std::shared_ptr<Callable>>(value))
+    if (std::holds_alternative<Callable *>(value))
     {
-        return std::get<std::shared_ptr<Callable>>(value)->toString();
+        return std::get<Callable *>(value)->toString();
     }
-    if (std::holds_alternative<std::shared_ptr<Instance>>(value))
+    if (std::holds_alternative<Instance *>(value))
     {
-        return std::get<std::shared_ptr<Instance>>(value)->toString();
+        return std::get<Instance *>(value)->toString();
     }
 
     return "DEBUG";
@@ -513,6 +521,6 @@ void Interpreter::resolve(Expr *expr, int depth)
 
 Interpreter::Interpreter() : environment(globals)
 {
-    std::shared_ptr<Callable> clockCallable = std::make_shared<ClockCallable>();
+    Callable *clockCallable = new ClockCallable();
     globals->define("clock", clockCallable);
 }
