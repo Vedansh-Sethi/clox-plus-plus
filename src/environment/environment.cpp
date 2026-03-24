@@ -47,10 +47,10 @@ void Environment::assignAt(int distance, Token ident, LiteralValue value)
     ancestor(distance)->values.at(ident.lexeme) = value;
 }
 
-Environment* Environment::ancestor(int distance)
+Environment *Environment::ancestor(int distance)
 {
-    Environment* env = this;
-    for(int i = 0; i < distance; i++)
+    Environment *env = this;
+    for (int i = 0; i < distance; i++)
     {
         env = env->enclosing.get();
     }
