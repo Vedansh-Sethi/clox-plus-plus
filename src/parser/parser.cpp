@@ -569,7 +569,7 @@ std::unique_ptr<Stmt> Parser::classDeclStmt()
 
     while (!check(RIGHT_BRACE) && !isAtEnd())
     {
-        if(match(CLASS)) statics.push_back(funDeclStmt("statics method"));
+        if(match(CLASS)) statics.push_back(funDeclStmt("static method"));
         else methods.push_back(funDeclStmt("method"));
     }
 
