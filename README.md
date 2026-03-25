@@ -69,4 +69,7 @@ This is the C++ implementation of the JLox compiler made in "Crafting Interprete
 - `whileStmt` -> "while" "(" `expression` ")" `stmt`;
 - `forStmt` -> "for" "(" (`varDeclStmt` | `exprStmt` | ";") `expression`? ";" `expression`? ")" `stmt`;
 - `break` -> "break;";
+- `property` -> "prop" IDENTIFIER "{" (`get` | `set`)* "}" ;
+- `get` -> "get" `block`
+- `set` -> "set""("  IDENTIFIER ")" `block`
 - `continue` -> "continue;";
