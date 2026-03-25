@@ -6,6 +6,7 @@
 using Fields = std::unordered_map<std::string, LiteralValue>;
 
 class Class;
+class Property;
 
 class Instance
 {
@@ -16,6 +17,7 @@ public:
     Instance(Class* klass) : klass(klass) {}
     LiteralValue get(Token name);
     void set(Token name, LiteralValue value);
+    Property *getProperty(std::string name);
     std::string toString() const;
     virtual ~Instance() = default;
 };

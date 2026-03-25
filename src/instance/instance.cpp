@@ -2,7 +2,9 @@
 #include "error.hpp"
 #include "function/function.hpp"
 #include "class/class.hpp"
-
+#include "property/property.hpp"
+#include "function/getter/getter.hpp"
+#include "function/setter/setter.hpp"
 
 std::string Instance::toString() const
 {
@@ -25,4 +27,10 @@ LiteralValue Instance::get(Token name)
 void Instance::set(Token name, LiteralValue value)
 {
     fields[name.lexeme] = value;
+}
+
+Property* Instance::getProperty(std::string name)
+{
+    Property* prop = klass->findProperty(name);
+    return prop;
 }
