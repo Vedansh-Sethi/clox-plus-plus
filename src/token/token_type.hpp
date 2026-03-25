@@ -53,6 +53,9 @@ enum TokenType
     WHILE,
     BREAK,
     CONTINUE,
+    GET, 
+    SET,
+    PROP,
 
     END_FILE
 };

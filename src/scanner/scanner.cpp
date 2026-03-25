@@ -27,6 +27,9 @@ static std::map<std::string, TokenType> keywords =
         {"while", WHILE},
         {"break", BREAK},
         {"continue", CONTINUE},
+        {"get", GET},
+        {"set", SET},
+        {"prop", PROP},
     };
 
 inline bool Scanner::isAtEnd() const
@@ -104,6 +107,11 @@ void Scanner::number()
     std::string stringValue = source.substr(start, current - start);
     double doubleValue = std::stod(stringValue);
     addToken(NUMBER, doubleValue);
+}
+
+bool isalnum(char c) 
+{
+    return ('a' <= c & c <= 'z') || ('A' <= c && c <= 'Z') || ('0' <= c && c <= '9') || c == '_';
 }
 
 // handles reserved keywords and identifiers
@@ -238,7 +246,7 @@ void Scanner::scanToken()
         {
             number();
         }
-        else if (isalpha(c))
+        else if (isalpha(c) || c == '_')
         {
             identifier();
         }
