@@ -10,7 +10,8 @@ enum FunctionType
     NONE, 
     FUNCTION,
     INITIALIZER,
-    METHOD
+    METHOD,
+    PROPERTY,
 };
 
 enum class ClassType
@@ -42,6 +43,9 @@ class Resolver : public StmtVisitor, public ExprVisitor
     void visitContinueStmt(ContinueStmt* stmt) override;
     void visitBreakStmt(BreakStmt* stmt) override;
     void visitClassDeclStmt(ClassDeclStmt* stmt) override;
+    void visitPropertyStmt(PropertyStmt* stmt) override;
+    void visitSetterDeclStmt(SetterDeclStmt* stmt) override;
+    void visitGetterDeclStmt(GetterDeclStmt* stmt) override;
 
     // expression visit methods
     void visitVariableExpr(VariableExpr *expr) override;
@@ -66,6 +70,9 @@ class Resolver : public StmtVisitor, public ExprVisitor
     void resolve(const std::vector<std::unique_ptr<Expr>> &exprs);
     void resolveLocal(Expr *expr, Token name);
     void resolveFunction(FunctionDeclStmt* stmt, FunctionType type);
+    void resolveProperty(PropertyStmt* stmt);
+    void resolveGetter(GetterDeclStmt* stmt);
+    void resolveSetter(SetterDeclStmt* stmt);
 
     void declare(Token name);
     void define(Token name);

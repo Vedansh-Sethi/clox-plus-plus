@@ -137,7 +137,7 @@ void Resolver::visitReturnStmt(ReturnStmt *stmt)
         ErrorHandler::error(stmt->keyword, "Can't return from global scope");
     if (stmt->value.get() != nullptr && currentFunc == INITIALIZER)
         ErrorHandler::error(stmt->keyword, "Can't return value from an initializer");
-    if (stmt->value.get() == nullptr && currentFunc == INITIALIZER)
+    if (stmt->value == nullptr)
         return;
 
     resolve(stmt->value);
@@ -200,6 +200,43 @@ void Resolver::visitTernaryExpr(TernaryExpr *expr)
     }
 }
 
+void Resolver::resolveSetter(SetterDeclStmt *stmt)
+{
+    FunctionType enclosing = currentFunc;
+    currentFunc = PROPERTY;
+    beginScope();
+    declare(stmt->keyword);
+    define(stmt->keyword);
+    scopes.back()["field"] = true;
+    declare(stmt->param);
+    define(stmt->param);
+    resolve(stmt->body);
+    endScope();
+    currentFunc = enclosing;
+}
+
+void Resolver::resolveGetter(GetterDeclStmt *stmt)
+{
+    FunctionType enclosing = currentFunc;
+    currentFunc = PROPERTY;
+    beginScope();
+    declare(stmt->keyword);
+    define(stmt->keyword);
+    scopes.back()["field"] = true;
+    resolve(stmt->body);
+    endScope();
+    currentFunc = enclosing;
+}
+
+void Resolver::resolveProperty(PropertyStmt *prop)
+{
+    declare(prop->name);
+    define(prop->name);
+
+    resolveGetter(prop->getter.get());
+    resolveSetter(prop->setter.get());
+}
+
 void Resolver::visitClassDeclStmt(ClassDeclStmt *stmt)
 {
     ClassType enclosing = currentClass;
@@ -230,9 +267,18 @@ void Resolver::visitClassDeclStmt(ClassDeclStmt *stmt)
         resolveFunction(stat.get(), declaration);
     }
 
+    for (const std::unique_ptr<PropertyStmt> &prop : stmt->properties)
+    {
+        resolveProperty(prop.get());
+    }
+
     endScope();
     currentClass = enclosing;
 }
+
+void Resolver::visitSetterDeclStmt(SetterDeclStmt *stmt) {}
+void Resolver::visitGetterDeclStmt(GetterDeclStmt *stmt) {}
+void Resolver::visitPropertyStmt(PropertyStmt *stmt) {}
 
 void Resolver::visitThisExpr(ThisExpr *expr)
 {
