@@ -17,4 +17,5 @@ public:
     LiteralValue get(Token name);
     void set(Token name, LiteralValue value);
     std::string toString() const;
+    virtual ~Instance() = default;
 };
