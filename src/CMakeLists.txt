@@ -11,6 +11,8 @@ set(SOURCES
     resolver/resolver.cpp
     class/class.cpp
     instance/instance.cpp
+    function/getter/getter.cpp
+    function/setter/setter.cpp
 )
 
 
