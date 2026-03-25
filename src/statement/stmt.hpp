@@ -3,6 +3,7 @@
 #include <vector>
 #include <memory>
 #include "token/token.hpp"
+#include "expression/expr.hpp"
 
 class StmtVisitor;
 class BlockStmt;
@@ -16,6 +17,9 @@ class ForStmt;
 class BreakStmt;
 class ContinueStmt;
 class FunctionDeclStmt;
+class GetterDeclStmt;
+class SetterDeclStmt;
+class PropertyStmt;
 class ClassDeclStmt;
 
 
@@ -38,6 +42,9 @@ public:
      virtual void visitBreakStmt(BreakStmt* Stmt) = 0;
      virtual void visitContinueStmt(ContinueStmt* Stmt) = 0;
      virtual void visitFunctionDeclStmt(FunctionDeclStmt* Stmt) = 0;
+     virtual void visitGetterDeclStmt(GetterDeclStmt* Stmt) = 0;
+     virtual void visitSetterDeclStmt(SetterDeclStmt* Stmt) = 0;
+     virtual void visitPropertyStmt(PropertyStmt* Stmt) = 0;
      virtual void visitClassDeclStmt(ClassDeclStmt* Stmt) = 0;
 
 };
@@ -184,14 +191,56 @@ public:
      }
  };
 
+class GetterDeclStmt : public Stmt {
+
+public: 
+     Token keyword;
+     std::vector<std::unique_ptr<Stmt>> body;
+
+     GetterDeclStmt(Token keyword,std::vector<std::unique_ptr<Stmt>> body) : keyword(keyword), body(std::move(body)) {}
+
+     void accept(StmtVisitor* visitor) override {
+         visitor->visitGetterDeclStmt(this);
+     }
+ };
+
+class SetterDeclStmt : public Stmt {
+
+public: 
+     Token keyword;
+     Token param;
+     std::vector<std::unique_ptr<Stmt>> body;
+
+     SetterDeclStmt(Token keyword,Token param,std::vector<std::unique_ptr<Stmt>> body) : keyword(keyword), param(param), body(std::move(body)) {}
+
+     void accept(StmtVisitor* visitor) override {
+         visitor->visitSetterDeclStmt(this);
+     }
+ };
+
+class PropertyStmt : public Stmt {
+
+public: 
+     Token name;
+     std::unique_ptr<GetterDeclStmt> getter;
+     std::unique_ptr<SetterDeclStmt> setter;
+
+     PropertyStmt(Token name,std::unique_ptr<GetterDeclStmt> getter,std::unique_ptr<SetterDeclStmt> setter) : name(name), getter(std::move(getter)), setter(std::move(setter)) {}
+
+     void accept(StmtVisitor* visitor) override {
+         visitor->visitPropertyStmt(this);
+     }
+ };
+
 class ClassDeclStmt : public Stmt {
 
 public: 
      Token name;
      std::vector<std::unique_ptr<FunctionDeclStmt>> methods;
      std::vector<std::unique_ptr<FunctionDeclStmt>> statics;
+     std::vector<std::unique_ptr<PropertyStmt>> properties;
 
-     ClassDeclStmt(Token name,std::vector<std::unique_ptr<FunctionDeclStmt>> methods,std::vector<std::unique_ptr<FunctionDeclStmt>> statics) : name(name), methods(std::move(methods)), statics(std::move(statics)) {}
+     ClassDeclStmt(Token name,std::vector<std::unique_ptr<FunctionDeclStmt>> methods,std::vector<std::unique_ptr<FunctionDeclStmt>> statics,std::vector<std::unique_ptr<PropertyStmt>> properties) : name(name), methods(std::move(methods)), statics(std::move(statics)), properties(std::move(properties)) {}
 
      void accept(StmtVisitor* visitor) override {
          visitor->visitClassDeclStmt(this);
