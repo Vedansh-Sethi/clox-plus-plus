@@ -18,6 +18,7 @@ private:
     LiteralValue evaluate(Expr *expr);
     Map locals;
     void execute(Stmt *stmt);
+    bool inProperty = false;
 
 private:
     // expression interpreting functions
@@ -49,6 +50,9 @@ private:
     void visitFunctionDeclStmt(FunctionDeclStmt *stmt) override;
     void visitReturnStmt(ReturnStmt *stmt) override;
     void visitClassDeclStmt(ClassDeclStmt *stmt) override;
+    void visitGetterDeclStmt(GetterDeclStmt *stmt) override;
+    void visitSetterDeclStmt(SetterDeclStmt *stmt) override;
+    void visitPropertyStmt(PropertyStmt *stmt) override;
 
 public:
     std::shared_ptr<Environment> globals = std::make_shared<Environment>();

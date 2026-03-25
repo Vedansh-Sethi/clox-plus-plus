@@ -7,6 +7,9 @@
 #include "function/native_function/nativeFunction.hpp"
 #include "class/class.hpp"
 #include "instance/instance.hpp"
+#include "function/getter/getter.hpp"
+#include "function/setter/setter.hpp"
+#include "property/property.hpp"
 
 using LiteralValue = std::variant<std::monostate, std::string, double, bool, Callable *, Instance *>;
 
@@ -288,12 +291,13 @@ void Interpreter::visitCallExpr(CallExpr *expr)
     if (std::holds_alternative<Instance *>(callee))
     {
         function = dynamic_cast<Class *>(std::get<Instance *>(callee));
-        if(function == nullptr) throw ErrorHandler::RuntimeError(expr->paren, "Can only call functions and classes");
+        if (function == nullptr)
+            throw ErrorHandler::RuntimeError(expr->paren, "Can only call functions and classes");
     }
 
-    if(std::holds_alternative<Callable *>(callee))
+    if (std::holds_alternative<Callable *>(callee))
     {
-        function = std::get<Callable*>(callee);
+        function = std::get<Callable *>(callee);
     }
 
     std::vector<LiteralValue> arguments;
@@ -353,11 +357,16 @@ void Interpreter::visitIfStmt(IfStmt *stmt)
     }
 }
 
+void Interpreter::visitPropertyStmt(PropertyStmt *stmt) {}
+void Interpreter::visitGetterDeclStmt(GetterDeclStmt *stmt) {}
+void Interpreter::visitSetterDeclStmt(SetterDeclStmt *stmt) {}
+
 void Interpreter::visitClassDeclStmt(ClassDeclStmt *stmt)
 {
     environment->define(stmt->name.lexeme, std::monostate());
     std::unordered_map<std::string, Function *> methods;
     std::unordered_map<std::string, Function *> statics;
+    Properties properties;
 
     for (const std::unique_ptr<FunctionDeclStmt> &method : stmt->methods)
     {
@@ -371,8 +380,18 @@ void Interpreter::visitClassDeclStmt(ClassDeclStmt *stmt)
         statics[stat->name.lexeme] = func;
     }
 
-    Class *metaClass = new Class(stmt->name.lexeme + " class", statics);
-    Class *klass = new Class(stmt->name.lexeme, methods, metaClass);
+    for (const std::unique_ptr<PropertyStmt> &property : stmt->properties)
+    {
+        GetterFunction *getter = new GetterFunction(property->name, environment, property->getter->body);
+        SetterFunction *setter = new SetterFunction(property->name, property->setter->param, environment, property->setter->body);
+        Property *prop = new Property(property->name, getter, setter);
+        properties[prop->name.lexeme] = prop;
+    }
+
+    Properties metaProps;
+
+    Class *metaClass = new Class(stmt->name.lexeme + " class", statics, metaProps);
+    Class *klass = new Class(stmt->name.lexeme, methods, properties, metaClass);
     environment->assign(stmt->name, dynamic_cast<Instance *>(klass));
 }
 
@@ -446,26 +465,60 @@ void Interpreter::visitContinueStmt(ContinueStmt *stmt)
 void Interpreter::visitGetExpr(GetExpr *expr)
 {
     LiteralValue object = evaluate(expr->object.get());
+
     if (std::holds_alternative<Instance *>(object))
     {
-        result = (std::get<Instance *>(object))->get(expr->name);
+        Instance *obj = std::get<Instance *>(object);
+        if (Property *prop = obj->getProperty(expr->name.lexeme))
+        {
+            std::vector<LiteralValue> arguments(0);
+            if (prop->getter == nullptr)
+                throw ErrorHandler::RuntimeError(expr->name, expr->name.lexeme + " is a private property");
+            result = prop->getter->bind(obj)->call(this, arguments);
+            return;
+        }
+        if (expr->name.lexeme[0] == '_')
+        {
+            if (dynamic_cast<ThisExpr *>(expr->object.get()) == nullptr)
+                throw ErrorHandler::RuntimeError(expr->name, "Cannot access private variables from outside the class");
+        }
+        result = obj->get(expr->name);
         return;
     }
+
     throw ErrorHandler::RuntimeError(expr->name, "Only instances have properties");
 }
 
 void Interpreter::visitSetExpr(SetExpr *expr)
 {
     LiteralValue object = evaluate(expr->object.get());
+    LiteralValue value = evaluate(expr->value.get());
     if (!std::holds_alternative<Instance *>(object))
     {
         throw ErrorHandler::RuntimeError(expr->name, "Only class instances have fields");
     }
 
-    LiteralValue value = evaluate(expr->value.get());
     Instance *obj = std::get<Instance *>(object);
-
-    obj->set(expr->name, value);
+    if (Property *prop = obj->getProperty(expr->name.lexeme))
+    {
+        inProperty = true;
+        std::vector<LiteralValue> arguments = {value};
+        if (prop->setter == nullptr)
+            throw ErrorHandler::RuntimeError(expr->name, expr->name.lexeme + " is a read-only property");
+        result = prop->setter->bind(obj)->call(this, arguments);
+        inProperty = false;
+        return;
+    }
+    else
+    {
+        if (expr->name.lexeme[0] == '_')
+        {
+            if (dynamic_cast<ThisExpr *>(expr->object.get()) == nullptr)
+                throw ErrorHandler::RuntimeError(expr->name, "Cannot access private variables from outside the class");
+        }
+        obj->set(expr->name, value);
+        return;
+    }
 }
 
 std::string Interpreter::stringify(LiteralValue value)
