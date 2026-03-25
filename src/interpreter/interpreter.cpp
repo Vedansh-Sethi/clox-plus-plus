@@ -279,10 +279,21 @@ void Interpreter::visitLambdaExpr(LambdaExpr *expr)
 void Interpreter::visitCallExpr(CallExpr *expr)
 {
     LiteralValue callee = evaluate((expr->callee).get());
-
-    if (!std::holds_alternative<Callable *>(callee))
+    if (!std::holds_alternative<Instance *>(callee) && !std::holds_alternative<Callable *>(callee))
     {
         throw ErrorHandler::RuntimeError(expr->paren, "Can only call functions and classes");
+    }
+
+    Callable *function;
+    if (std::holds_alternative<Instance *>(callee))
+    {
+        function = dynamic_cast<Class *>(std::get<Instance *>(callee));
+        if(function == nullptr) throw ErrorHandler::RuntimeError(expr->paren, "Can only call functions and classes");
+    }
+
+    if(std::holds_alternative<Callable *>(callee))
+    {
+        function = std::get<Callable*>(callee);
     }
 
     std::vector<LiteralValue> arguments;
@@ -290,8 +301,6 @@ void Interpreter::visitCallExpr(CallExpr *expr)
     {
         arguments.push_back(evaluate(argument.get()));
     }
-
-    Callable *function = std::get<Callable *>(callee);
 
     if (arguments.size() != function->arity())
     {
@@ -364,7 +373,7 @@ void Interpreter::visitClassDeclStmt(ClassDeclStmt *stmt)
 
     Class *metaClass = new Class(stmt->name.lexeme + " class", statics);
     Class *klass = new Class(stmt->name.lexeme, methods, metaClass);
-    environment->assign(stmt->name, dynamic_cast<Instance*>(klass));
+    environment->assign(stmt->name, dynamic_cast<Instance *>(klass));
 }
 
 void Interpreter::visitThisExpr(ThisExpr *expr)
