@@ -559,6 +559,48 @@ std::unique_ptr<Stmt> Parser::declaration()
     }
 }
 
+std::unique_ptr<GetterDeclStmt> Parser::getter(Token keyword)
+{
+    consume(LEFT_BRACE, "Expected \"{\" before body");
+    std::vector<std::unique_ptr<Stmt>> body = block();
+    return std::make_unique<GetterDeclStmt>(keyword, std::move(body));
+}
+
+std::unique_ptr<SetterDeclStmt> Parser::setter(Token keyword)
+{
+    consume(LEFT_PAREN, "Expected \"(\" before paramters");
+    Token param = consume(IDENTIFIER, "Expected paramter name");
+
+    consume(RIGHT_PAREN, "Expected \")\" after parameters list");
+
+    consume(LEFT_BRACE, "Expected \"{\" before body");
+    std::vector<std::unique_ptr<Stmt>> body = block();
+
+    return std::make_unique<SetterDeclStmt>(keyword, param, std::move(body));
+}
+
+std::unique_ptr<PropertyStmt> Parser::property(Token name)
+{
+    consume(LEFT_BRACE, "Expected \"{\" before property body");
+    std::unique_ptr<GetterDeclStmt> get = nullptr;
+    std::unique_ptr<SetterDeclStmt> set = nullptr;
+    while (!check(RIGHT_BRACE))
+    {
+        if (match(GET))
+            get = getter(previous());
+        else if (match(SET))
+            set = setter(previous());
+        else
+        {
+            ErrorHandler::error(peek(), "Only getter and setter declarations inside properties");
+            advance();
+        }
+    }
+
+    consume(RIGHT_BRACE, "Expected \"}\" after property body");
+    return std::make_unique<PropertyStmt>(name, std::move(get), std::move(set));
+}
+
 std::unique_ptr<Stmt> Parser::classDeclStmt()
 {
     Token name = consume(IDENTIFIER, "Expected class name");
@@ -566,16 +608,21 @@ std::unique_ptr<Stmt> Parser::classDeclStmt()
 
     std::vector<std::unique_ptr<FunctionDeclStmt>> methods;
     std::vector<std::unique_ptr<FunctionDeclStmt>> statics;
+    std::vector<std::unique_ptr<PropertyStmt>> properties;
 
     while (!check(RIGHT_BRACE) && !isAtEnd())
     {
-        if(match(CLASS)) statics.push_back(funDeclStmt("static method"));
-        else methods.push_back(funDeclStmt("method"));
+        if (match(CLASS))
+            statics.push_back(funDeclStmt("static method"));
+        else if (match(PROP))
+            properties.push_back(property(consume(IDENTIFIER, "Expected property name")));
+        else
+            methods.push_back(funDeclStmt("method"));
     }
 
     consume(RIGHT_BRACE, "Expected \"}\" after class body");
 
-    return std::make_unique<ClassDeclStmt>(name, std::move(methods), std::move(statics));
+    return std::make_unique<ClassDeclStmt>(name, std::move(methods), std::move(statics), std::move(properties));
 }
 
 std::unique_ptr<Stmt> Parser::blockStmt()

@@ -14,7 +14,7 @@ private:
     const std::vector<Token> tokens;
     int current = 0;
     int loopCount = 0;
-
+    
 private:
     // expression parsing functions
     std::unique_ptr<Expr> expression();
@@ -35,6 +35,9 @@ private:
     // statement parsing functions
     std::unique_ptr<Stmt> declaration();
     std::unique_ptr<FunctionDeclStmt> funDeclStmt(std::string kind);
+    std::unique_ptr<PropertyStmt> property(Token name);
+    std::unique_ptr<GetterDeclStmt> getter(Token keyword);
+    std::unique_ptr<SetterDeclStmt> setter(Token keyword);
     std::unique_ptr<Stmt> classDeclStmt();
     std::unique_ptr<Stmt> varDeclStmt();
     std::unique_ptr<Stmt> statement();
