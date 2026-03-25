@@ -5,6 +5,7 @@
 #include "function/function.hpp"
 #include "token/token.hpp"
 #include "instance/instance.hpp"
+#include "property/property.hpp"
 
 std::string Class::toString() const
 {
@@ -39,5 +40,15 @@ Function* Class::findMethod(std::string name)
         return methods.at(name);
     }
 
+    return nullptr;
+}
+
+Property* Class::findProperty(std::string name)
+{
+    if(props.count(name))
+    {
+        return props.at(name);
+    }
+    
     return nullptr;
 }
